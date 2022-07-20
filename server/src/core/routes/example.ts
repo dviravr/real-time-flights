@@ -11,4 +11,4 @@ router.post('/example/post', ((req, res) => {
 }));
 
 
-export { router as exampleRouter }
+export { router as exampleRouter };

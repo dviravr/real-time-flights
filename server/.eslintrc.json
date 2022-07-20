@@ -15,7 +15,9 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "new-cap": 0,
+        "object-curly-spacing": 0,
         "semi": ["error", "always"],
-        "quotes": ["error", "double"]
+        "quotes": ["error", "single"]
     }
 }

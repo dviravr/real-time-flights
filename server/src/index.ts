@@ -11,8 +11,8 @@ const uri = 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mon
 mongoose.connect(uri);
 
 const dbConnection = mongoose.connection;
-dbConnection.on("error", (err) => console.log(`Connection error ${err}`));
-dbConnection.once("open", () => console.log("Connected to DB!"));
+dbConnection.on('error', (err) => console.log(`Connection error ${err}`));
+dbConnection.once('open', () => console.log('Connected to DB!'));
 
 app.use(json());
 app.use(exampleRouter);
