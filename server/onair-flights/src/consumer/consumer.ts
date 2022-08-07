@@ -1,6 +1,6 @@
 import { Consumer } from 'kafkajs';
 import { config } from '../config';
-import { createKafka } from '../service/kafka.service';
+import { createKafka } from '../services/kafka.service';
 
 export class ConsumerService {
   consumer: Consumer;

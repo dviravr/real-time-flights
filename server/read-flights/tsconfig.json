@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "lib": [
+      "es2015.promise", "es5", "dom"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "**/*.spec.ts",
+    "../../../../AppData/Local/JetBrains/WebStorm2022.1/javascript/typings/node/16.11.46/node_modules/@types/node/buffer.d.ts",
+    "../../../../AppData/Local/JetBrains/WebStorm2022.1/javascript/typings/node/16.11.46/node_modules/@types/node/globals.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
