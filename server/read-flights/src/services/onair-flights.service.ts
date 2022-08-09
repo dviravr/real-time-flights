@@ -1,6 +1,6 @@
-import { Flight } from '../model/flight.model';
+import { Flight, FlightsTypes } from '../model/flight.model';
 import { getGeoDistance } from '../utils/geo.utils';
-import { FlightsTypes, getAllFlightsByType, getFlightFullDetails } from './flight.service';
+import { getAllFlightsByType, getFlightFullDetails } from './flight.service';
 import { keyBy } from 'lodash';
 import { producer } from '../index';
 import { config } from '../config';

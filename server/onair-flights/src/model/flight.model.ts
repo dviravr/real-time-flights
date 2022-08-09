@@ -3,11 +3,11 @@ export interface Flight {
   callSign: string;
   airline: string;
   distance: number;
-  actualTime?: FlightTime;
+  actualTime: FlightTime;
   scheduledTime: FlightTime;
   origin: AirportMetadata;
   destination: AirportMetadata;
-  trail?: Location[];
+  trail: Location[];
 }
 
 export interface FlightTime {

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
+import { FlightsTypes } from '../model/flight.model';
 
 export const getFlightFullDetails = (flightId: string) => {
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
@@ -23,11 +24,6 @@ export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: num
     return apiFlights;
   }
 };
-
-export enum FlightsTypes {
-  ARRIVALS = 'arrivals',
-  DEPARTURES = 'departures'
-}
 
 const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) => {
   try {

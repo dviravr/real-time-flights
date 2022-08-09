@@ -1,6 +1,7 @@
 import { Consumer } from 'kafkajs';
 import { config } from '../config';
 import { createKafka } from '../services/kafka.service';
+import { saveFlights } from '../services/redis.service';
 
 export class ConsumerService {
   consumer: Consumer;
@@ -15,7 +16,15 @@ export class ConsumerService {
 
   async connect() {
     await this.consumer.connect();
-    await this.consumer.subscribe({ topic: config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS, fromBeginning: true });
+    await this.consumer.subscribe(
+        {
+          topics:
+              [
+                config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS,
+                config.CLOUDKARAFKA_TOPIC_TAKE_OFF,
+              ],
+          fromBeginning: true,
+        });
   }
 
   connectionLogger() {
@@ -33,14 +42,9 @@ export class ConsumerService {
   async getMessages() {
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        console.log(message);
-        const parsedMessage = JSON.parse(message.value.toString());
-        console.log({
-          topic,
-          partition,
-          offset: message.offset,
-          value: parsedMessage,
-        });
+        if (topic === config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS) {
+          await saveFlights(message.key.toString(), JSON.parse(message.value.toString()));
+        }
       },
     });
   }

@@ -1,5 +1,5 @@
-import { FlightsTypes, getAllFlightsByType } from './flight.service';
-import { Flight } from '../model/flight.model';
+import { getAllFlightsByType } from './flight.service';
+import { Flight, FlightsTypes } from '../model/flight.model';
 import moment from 'moment';
 import { getGeoDistance } from '../utils/geo.utils';
 
