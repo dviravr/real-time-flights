@@ -10,14 +10,14 @@ export const getFlightFullDetails = (flightId: string) => {
   }).catch((err) => console.log(err));
 };
 
-export const getAllFlightsByType = async (whatToRequest: FlightsTypes) => {
-  const firstPage = await getFlightsRequest(whatToRequest);
+export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
+  const firstPage = await getFlightsRequest(whatToRequest, page);
   if (firstPage) {
     const totalPages: number = firstPage.page.total;
     const nextPage: number = firstPage.page.current + 1;
     let apiFlights: any[] = firstPage.data;
     for (let i = nextPage; i <= totalPages; i++) {
-      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i)).data);
+      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i))?.data);
     }
 
     return apiFlights;
@@ -26,8 +26,7 @@ export const getAllFlightsByType = async (whatToRequest: FlightsTypes) => {
 
 export enum FlightsTypes {
   ARRIVALS = 'arrivals',
-  DEPARTURES = 'departures',
-  ON_GROUND = 'ground'
+  DEPARTURES = 'departures'
 }
 
 const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) => {

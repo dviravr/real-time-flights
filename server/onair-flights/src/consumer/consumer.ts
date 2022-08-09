@@ -15,7 +15,7 @@ export class ConsumerService {
 
   async connect() {
     await this.consumer.connect();
-    await this.consumer.subscribe({ topic: config.CLOUDKARAFKA_TOPIC_REAL_TIME, fromBeginning: true });
+    await this.consumer.subscribe({ topic: config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS, fromBeginning: true });
   }
 
   connectionLogger() {
@@ -33,13 +33,10 @@ export class ConsumerService {
   async getMessages() {
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        let parsedMessage;
-        try {
-          parsedMessage = JSON.parse(message.value.toString());
-        } catch {
-          parsedMessage = message.value.toString();
-        }
+        console.log(message);
+        const parsedMessage = JSON.parse(message.value.toString());
         console.log({
+          topic,
           partition,
           offset: message.offset,
           value: parsedMessage,

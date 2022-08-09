@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node dist/index.js",
-    "start:dev": "nodemon",
+    "start:readFlights": "npm run build && node dist/index.js",
+    "start:dev:readFlights": "nodemon",
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,6 +26,8 @@
   "dependencies": {
     "axios": "^0.27.2",
     "express": "^4.17.1",
-    "kafkajs": "^2.1.0"
+    "kafkajs": "^2.1.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4"
   }
 }
