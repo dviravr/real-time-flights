@@ -1,7 +1,7 @@
 import express from 'express';
 import { json } from 'body-parser';
 import { sendOnAirFlights } from './services/onair-flights.service';
-import { config } from './config';
+import { config } from 'real-time-flight-lib';
 import { ProducerService } from './kafka/producer/producer.service';
 
 export const producer = new ProducerService();

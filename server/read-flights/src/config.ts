@@ -1,4 +1,4 @@
-export const config = {
+export const config1 = {
   CLOUDKARAFKA_BROKERS: [
     'rocket-01.srvs.cloudkafka.com:9094',
     'rocket-02.srvs.cloudkafka.com:9094',

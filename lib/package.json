@@ -1,8 +1,10 @@
 {
   "name": "real-time-flight-lib",
-  "version": "1.0.0-1",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": ["lib/**/*"],
   "scripts": {
     "start:lib": "npm run build && node dist/index.js",
     "build": "npx tsc",
