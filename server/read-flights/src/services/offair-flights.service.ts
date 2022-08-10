@@ -1,7 +1,6 @@
 import { getAllFlightsByType } from './flight.service';
-import { Flight, FlightsTypes } from '../model/flight.model';
+import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import moment from 'moment';
-import { getGeoDistance } from '../utils/geo.utils';
 
 export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: number): Flight[] => {
   const timeToCompare = moment().add(minutesRange, 'minutes').unix();
@@ -33,7 +32,7 @@ export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: numb
             departureTime: apiFlight.flight.time.scheduled.departure,
             arrivalTime: apiFlight.flight.time.scheduled.arrival,
           },
-          distance: 1000,
+          distance: 1000, // TODO: change distance
         };
       });
 };

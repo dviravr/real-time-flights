@@ -1,6 +1,6 @@
 {
   "name": "real-time-flight-lib",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,7 +8,8 @@
   "scripts": {
     "start:lib": "npm run build && node dist/index.js",
     "build": "npx tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "updateLib": "npm run build && npm pack"
   },
   "keywords": [],
   "author": "",

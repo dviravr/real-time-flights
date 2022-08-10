@@ -29,3 +29,8 @@ export interface Location {
   speed: number;
   head: number;
 }
+
+export enum FlightsTypes {
+  ARRIVALS = 'arrivals',
+  DEPARTURES = 'departures'
+}

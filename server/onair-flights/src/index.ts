@@ -1,8 +1,9 @@
 import express from 'express';
 import { json } from 'body-parser';
-import { redisClient } from './services/redis.service';
-import { consumer } from './services/kafka.service';
+import { redisClient, saveFlights } from './services/redis.service';
+import { config, ConsumerService } from 'real-time-flight-lib';
 
+export const onAirConsumer = new ConsumerService('on-air-consumer', config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
 
 const app = express();
 const port = 4000;
@@ -26,6 +27,9 @@ app.listen(port, async () => {
   const newF = await redisClient.get(f.id);
   const jsonF = JSON.parse(newF);
 
-  await consumer.connect();
-  await consumer.getMessages();
+  await onAirConsumer.consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      await saveFlights(message.key.toString(), JSON.parse(message.value.toString()));
+    },
+  });
 });

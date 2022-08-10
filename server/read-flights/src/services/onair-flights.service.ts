@@ -1,9 +1,8 @@
-import { Flight, FlightsTypes } from '../model/flight.model';
 import { getGeoDistance } from '../utils/geo.utils';
 import { getAllFlightsByType, getFlightFullDetails } from './flight.service';
 import { keyBy } from 'lodash';
 import { producer } from '../index';
-import { config } from '../config';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { Message } from 'kafkajs';
 
 const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {

@@ -26,6 +26,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "mongoose": "^6.4.3",
-    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.1.tgz"
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.3.tgz"
   }
 }

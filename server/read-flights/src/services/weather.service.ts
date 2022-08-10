@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config } from '../config';
+import { config } from 'real-time-flight-lib';
 
 const getTlvWeather = async () => {
   try {

@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { config } from '../config';
-import { FlightsTypes } from '../model/flight.model';
+import { config, FlightsTypes } from 'real-time-flight-lib';
 
 export const getFlightFullDetails = (flightId: string) => {
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
