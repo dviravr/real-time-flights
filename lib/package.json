@@ -1,0 +1,26 @@
+{
+  "name": "real-time-flight-lib",
+  "version": "1.0.3",
+  "description": "",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": ["lib/**/*"],
+  "scripts": {
+    "start:lib": "npm run build && node dist/index.js",
+    "build": "npx tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "updateLib": "npm run build && npm pack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.6.5",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "kafkajs": "^2.1.0",
+    "lodash": "^4.17.21"
+  }
+}

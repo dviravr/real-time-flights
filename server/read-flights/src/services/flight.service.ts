@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config } from '../config';
+import { config, FlightsTypes } from 'real-time-flight-lib';
 
 export const getFlightFullDetails = (flightId: string) => {
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
@@ -10,25 +10,19 @@ export const getFlightFullDetails = (flightId: string) => {
   }).catch((err) => console.log(err));
 };
 
-export const getAllFlightsByType = async (whatToRequest: FlightsTypes) => {
-  const firstPage = await getFlightsRequest(whatToRequest);
+export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
+  const firstPage = await getFlightsRequest(whatToRequest, page);
   if (firstPage) {
     const totalPages: number = firstPage.page.total;
     const nextPage: number = firstPage.page.current + 1;
     let apiFlights: any[] = firstPage.data;
     for (let i = nextPage; i <= totalPages; i++) {
-      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i)).data);
+      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i))?.data);
     }
 
     return apiFlights;
   }
 };
-
-export enum FlightsTypes {
-  ARRIVALS = 'arrivals',
-  DEPARTURES = 'departures',
-  ON_GROUND = 'ground'
-}
 
 const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) => {
   try {

@@ -5,8 +5,8 @@ export interface Flight {
   distance: number;
   actualTime?: FlightTime;
   scheduledTime: FlightTime;
-  origin: LocationMetadata;
-  destination: LocationMetadata;
+  origin: AirportMetadata;
+  destination: AirportMetadata;
   trail?: Location[];
 }
 
@@ -15,16 +15,11 @@ export interface FlightTime {
   arrivalTime: number;
 }
 
-export interface LocationMetadata {
+export interface AirportMetadata {
   weather: string;
   country: string;
   city: string;
-  airport: Airport;
-}
-
-export interface Airport {
-  name: string;
-  code: string;
+  airport: string;
 }
 
 export interface Location {
@@ -33,4 +28,9 @@ export interface Location {
   altitude: number;
   speed: number;
   head: number;
+}
+
+export enum FlightsTypes {
+  ARRIVALS = 'arrivals',
+  DEPARTURES = 'departures'
 }

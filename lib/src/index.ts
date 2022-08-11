@@ -1,0 +1,5 @@
+export * from './config'
+export * from './model/flight.model'
+export * from './kafka/kafka.service'
+export * from './kafka/producer/producer.service'
+export * from './kafka/consumer/consumer.service'

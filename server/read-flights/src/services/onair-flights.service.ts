@@ -1,18 +1,20 @@
-import { Flight } from '../model/real-time-flight.model';
 import { getGeoDistance } from '../utils/geo.utils';
-import { FlightsTypes, getAllFlightsByType, getFlightFullDetails } from './flight.service';
+import { getAllFlightsByType, getFlightFullDetails } from './flight.service';
+import { keyBy } from 'lodash';
+import { producer } from '../index';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
+import { Message } from 'kafkajs';
 
 const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {
   const flights: Flight[] = [];
   const flightsFullDetailsPromise = [];
-  apiFlights
-      .filter((apiFlight) => apiFlight.flight.status?.live)
+  apiFlights?.filter((apiFlight) => apiFlight.flight.status?.live && apiFlight.flight.identification.id)
       .map((apiFlight) => apiFlight.flight.identification.id)
       .forEach((flightId) => {
         flightsFullDetailsPromise.push(getFlightFullDetails(flightId));
       });
   const flightsFullDetails = await Promise.all(flightsFullDetailsPromise);
-  flightsFullDetails.forEach((apiFlight) => {
+  flightsFullDetails.filter((apiFlights) => apiFlights).forEach((apiFlight) => {
     flights.push({
       id: apiFlight.data.identification.id,
       callSign: apiFlight.data.identification.callsign,
@@ -60,10 +62,10 @@ const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {
   return flights;
 };
 
-export const getOnAirFlights = async () => {
+const getOnAirFlights = async () => {
   const [arrivalsApi, departuresApi] = await Promise.all([
     getAllFlightsByType(FlightsTypes.ARRIVALS),
-    getAllFlightsByType(FlightsTypes.DEPARTURES),
+    getAllFlightsByType(FlightsTypes.DEPARTURES, -1),
   ]);
 
   const [arrivals, departures] = await Promise.all([
@@ -71,5 +73,27 @@ export const getOnAirFlights = async () => {
     modelOnlineFlights(departuresApi),
   ]);
 
-  return { arrivals, departures };
+  return {
+    arrivals: keyBy(arrivals, 'id'),
+    departures: keyBy(departures, 'id'),
+  };
+};
+
+export const sendOnAirFlights = () => {
+  console.log('interval');
+  getOnAirFlights().then(({ arrivals, departures }) => {
+    const messages: Message[] = [
+      {
+        key: FlightsTypes.ARRIVALS,
+        value: JSON.stringify(arrivals),
+      },
+      {
+        key: FlightsTypes.DEPARTURES,
+        value: JSON.stringify(departures),
+      },
+    ];
+    producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
+  }).catch((err) => {
+    console.log(err);
+  });
 };

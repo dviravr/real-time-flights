@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node dist/index.js",
-    "start:dev": "nodemon",
+    "start:redis": "npm run build && node dist/index.js",
+    "start:dev:redis": "nodemon",
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,6 +27,7 @@
     "axios": "^0.27.2",
     "express": "^4.17.1",
     "kafkajs": "^2.1.0",
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.3.tgz",
     "redis": "^4.2.0"
   }
 }

@@ -1,6 +1,5 @@
 import { Kafka } from 'kafkajs';
 import { config } from '../config';
-import { ConsumerService } from '../consumer/consumer';
 
 export const createKafka = (clientId: string) => {
   return new Kafka({
@@ -15,5 +14,3 @@ export const createKafka = (clientId: string) => {
     },
   });
 };
-
-export const consumer = new ConsumerService();

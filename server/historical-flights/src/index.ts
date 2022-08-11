@@ -2,11 +2,12 @@ import express from 'express';
 import { json } from 'body-parser';
 import { exampleRouter } from './core/routes/example';
 import mongoose from 'mongoose';
+import { config } from 'real-time-flight-lib';
 
 const app = express();
 const port = 3000;
 
-const uri = 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mongodb.net/?retryWrites=true&w=majority';
+const uri = config.MONGO_URI;
 
 mongoose.connect(uri);
 
