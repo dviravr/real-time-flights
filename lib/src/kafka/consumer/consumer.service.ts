@@ -5,8 +5,8 @@ export class ConsumerService {
   private _consumer: Consumer;
 
   constructor(groupId: string, topic: string) {
-    this.consumer = createKafka('consumer').consumer({
-      groupId: 'consumer',
+    this.consumer = createKafka().consumer({
+      groupId,
     });
 
     this.connectionLogger();
