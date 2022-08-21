@@ -5,15 +5,12 @@ export class ProducerService {
   producer: Producer;
 
   constructor() {
-    this.producer = createKafka('producer').producer({
+    this.producer = createKafka().producer({
       createPartitioner: Partitioners.LegacyPartitioner,
     });
 
+    this.producer.connect().then();
     this.connectionLogger();
-  }
-
-  async connect() {
-    await this.producer.connect();
   }
 
   connectionLogger() {

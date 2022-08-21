@@ -1,9 +1,11 @@
 import express from 'express';
 import { json } from 'body-parser';
-import { redisClient, saveFlights } from './services/redis.service';
-import { config, ConsumerService } from 'real-time-flight-lib';
+import { redisClient, saveFlight, saveFlights } from './services/redis.service';
+import { config, ConsumerService, ProducerService } from 'real-time-flight-lib';
+import { FlightsTypes } from 'real-time-flight-lib/lib/model/flight.model';
 
 export const onAirConsumer = new ConsumerService('on-air-consumer', config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
+export const justLandedProducer = new ProducerService();
 
 const app = express();
 const port = 4000;
@@ -12,24 +14,16 @@ app.use(json());
 
 app.listen(port, async () => {
   console.log(`Express is listening at http://localhost:${port}`);
-
   await redisClient.connect();
-  const f = {
-    id: '123',
-    time: new Date().getTime(),
-    location: {
-      lat: 123,
-      lon: 321,
-    },
-  };
 
-  await redisClient.set(f.id, JSON.stringify(f));
-  const newF = await redisClient.get(f.id);
-  const jsonF = JSON.parse(newF);
-
+  await redisClient.flushDb();
   await onAirConsumer.consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      await saveFlights(message.key.toString(), JSON.parse(message.value.toString()));
+      if (message.key.toString() === FlightsTypes.ARRIVALS || message.key.toString() === FlightsTypes.DEPARTURES) {
+        await saveFlights(message.key.toString(), JSON.parse(message.value.toString()));
+      } else {
+        await saveFlight(message.key.toString(), message.value.toString());
+      }
     },
   });
 });

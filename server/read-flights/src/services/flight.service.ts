@@ -7,7 +7,10 @@ export const getFlightFullDetails = (flightId: string) => {
       version: '1.5',
       flight: flightId,
     },
-  }).catch((err) => console.log(err));
+  }).catch((err) => {
+    console.log(err);
+    return { data: 'error' };
+  });
 };
 
 export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
