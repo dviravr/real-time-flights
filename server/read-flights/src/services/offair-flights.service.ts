@@ -1,6 +1,7 @@
-import { getAllFlightsByType } from './flight.service';
+import { getAllFlightsByType, tlvDetails, tlvLocation } from './flight.service';
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import moment from 'moment';
+import { getGeoDistance } from '../utils/geo.utils';
 
 export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: number): Flight[] => {
   const timeToCompare = moment().add(minutesRange, 'minutes').unix();
@@ -16,12 +17,7 @@ export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: numb
           id: apiFlight.flight.identification.id,
           callSign: apiFlight.flight.identification.callsign,
           airline: apiFlight.flight.airline.name,
-          origin: {
-            airport: 'TLV',
-            city: 'Tel Aviv',
-            country: 'Israel',
-            weather: null,
-          },
+          origin: tlvDetails,
           destination: {
             airport: apiFlight.flight.airport.destination.code.iata,
             city: apiFlight.flight.airport.destination.position.region.city,
@@ -32,7 +28,10 @@ export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: numb
             departureTime: apiFlight.flight.time.scheduled.departure,
             arrivalTime: apiFlight.flight.time.scheduled.arrival,
           },
-          distance: 1000, // TODO: change distance
+          distance: getGeoDistance(tlvLocation, {
+            lat: apiFlight?.flight?.airport.destination.position.latitude,
+            lon: apiFlight?.flight?.airport.destination.position.longitude,
+          }),
         };
       });
 };

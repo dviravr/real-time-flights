@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config, FlightsTypes } from 'real-time-flight-lib';
+import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
 
 export const getFlightFullDetails = (flightId: string) => {
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
@@ -11,6 +11,18 @@ export const getFlightFullDetails = (flightId: string) => {
     console.log(err);
     return { data: 'error' };
   });
+};
+
+export const tlvDetails: AirportMetadata = {
+  airport: 'TLV',
+  city: 'Tel Aviv',
+  country: 'Israel',
+  weather: null,
+};
+
+export const tlvLocation = {
+  lat: 32.011379,
+  lon: 34.886662,
 };
 
 export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
@@ -34,6 +46,7 @@ const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) 
         'plugin-setting[schedule][mode]': whatToRequest,
         'code': config.TLV_AIRPORT_CODE,
         'token': config.FLIGHT_RADAR_24_TOKEN,
+        'plugin-setting[schedule][timestamp]': 1660986000,
         page,
       },
     });
