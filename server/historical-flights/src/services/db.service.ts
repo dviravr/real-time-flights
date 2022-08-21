@@ -38,3 +38,7 @@ export const connectToDB = async () => {
   dbConnection.on('error', (err) => console.log(`Connection error ${err}`));
   dbConnection.once('open', () => console.log('Connected to DB!'));
 };
+
+export const getAllFlights = async () => {
+  return flightModel.find();
+};

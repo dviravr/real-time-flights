@@ -29,6 +29,6 @@
     "kafkajs": "^2.1.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.6.tgz"
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.7.tgz"
   }
 }

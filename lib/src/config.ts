@@ -16,5 +16,7 @@ export const config = {
   FLIGHT_RADAR_24_TOKEN: 'VmiBN2LbqmkViGhm_zUV5K8NTMGXkwiHMn9yKFDAPYs',
   REQUEST_INTERVAL: 60000, // 60 seconds
   MONGO_URI: 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mongodb.net/?retryWrites=true&w=majority',
-  REDIS_URL: 'redis://default:Gs01PLNJ4RGcTv1PJdsqNYkMP8PHORVG@redis-14566.c250.eu-central-1-1.ec2.cloud.redislabs.com:14566'
+  REDIS_URL: 'redis://default:Gs01PLNJ4RGcTv1PJdsqNYkMP8PHORVG@redis-14566.c250.eu-central-1-1.ec2.cloud.redislabs.com:14566',
+  BIGML_USERNAME: 'HAREL-EZRA',
+  BIGML_API_KEY: 'd6601ffef42e4b99171778b01b620687617cb643'
 };
