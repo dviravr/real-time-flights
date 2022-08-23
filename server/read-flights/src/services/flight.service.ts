@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
+import { sendLog, ServicesEnum } from './logger.service';
 
 export const getFlightFullDetails = (flightId: string) => {
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
@@ -26,6 +27,7 @@ export const tlvLocation = {
 };
 
 export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
+  sendLog(ServicesEnum.FLIGHT_RADAR);
   const firstPage = await getFlightsRequest(whatToRequest, page);
   if (firstPage) {
     const totalPages: number = firstPage.page.total;
@@ -46,7 +48,7 @@ const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) 
         'plugin-setting[schedule][mode]': whatToRequest,
         'code': config.TLV_AIRPORT_CODE,
         'token': config.FLIGHT_RADAR_24_TOKEN,
-        'plugin-setting[schedule][timestamp]': 1660986000,
+        // 'plugin-setting[schedule][timestamp]': 1660986000,
         page,
       },
     });

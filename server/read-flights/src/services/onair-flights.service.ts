@@ -82,7 +82,6 @@ const getOnAirFlights = async () => {
 };
 
 export const sendOnAirFlights = () => {
-  console.log('interval');
   getOnAirFlights().then(({ arrivals, departures }) => {
     let messages: Message[] = [
       {
