@@ -2,7 +2,7 @@ import { createConnection } from 'mysql';
 
 export enum ServicesEnum {
   FLIGHT_RADAR = 'flightRadar24',
-  weather = 'weather',
+  WEATHER = 'weatherapi',
 }
 
 export const mysqlConnection = createConnection({

@@ -4,6 +4,8 @@ import { config, ConsumerService, ProducerService } from 'real-time-flight-lib';
 import { connectMysql } from './services/logger.service';
 import { sendOnAirFlights } from './services/onair-flights.service';
 import { justLandedFlights } from './services/just-landed.service';
+import { tlvDetails } from './services/flight.service';
+import { getWeatherAtCity } from './services/weather.service';
 
 export const producer = new ProducerService();
 export const justLandedConsumer = new ConsumerService('just-landed', config.CLOUDKARAFKA_TOPIC_JUST_LANDED);
@@ -17,11 +19,11 @@ connectMysql();
 
 app.listen(port, async () => {
   console.log(`Express is listening at http://localhost:${port}`);
-  sendOnAirFlights();
+  // sendOnAirFlights();
   // sendHistoricalFlights();
-
+  console.log(await getWeatherAtCity(tlvDetails.city));
   setInterval(() => {
-    sendOnAirFlights();
+    // sendOnAirFlights();
     // sendOffAirFlights();
   }, config.REQUEST_INTERVAL);
   await justLandedConsumer.consumer.run({

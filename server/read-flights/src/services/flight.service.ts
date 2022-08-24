@@ -3,6 +3,7 @@ import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
 import { sendLog, ServicesEnum } from './logger.service';
 
 export const getFlightFullDetails = (flightId: string) => {
+  sendLog(ServicesEnum.FLIGHT_RADAR);
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
     params: {
       version: '1.5',
@@ -27,7 +28,6 @@ export const tlvLocation = {
 };
 
 export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
-  sendLog(ServicesEnum.FLIGHT_RADAR);
   const firstPage = await getFlightsRequest(whatToRequest, page);
   if (firstPage) {
     const totalPages: number = firstPage.page.total;
@@ -42,6 +42,7 @@ export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: num
 };
 
 const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) => {
+  sendLog(ServicesEnum.FLIGHT_RADAR);
   try {
     const res = await axios.get(config.FLIGHT_RADAR_24_URL, {
       params: {

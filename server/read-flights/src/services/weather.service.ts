@@ -1,16 +1,19 @@
 import axios from 'axios';
 import { config } from 'real-time-flight-lib';
+import { sendLog, ServicesEnum } from './logger.service';
 
-const getTlvWeather = async () => {
+export const getWeatherAtCity = async (city: string): Promise<string> => {
+  sendLog(ServicesEnum.WEATHER);
   try {
-    const res = await axios.get(config.FLIGHT_RADAR_24_URL, {
+    const res = await axios.get(config.WEATHER_URL, {
       params: {
-        'code': config.TLV_AIRPORT_CODE,
-        'token': config.FLIGHT_RADAR_24_TOKEN,
+        key: config.WEATHER_API_KEY,
+        q: city,
       },
     });
-    return res.data.result.response.airport.pluginData.weather;
+    return res.data.current.condition.text;
   } catch (err) {
     console.log(err);
+    return undefined;
   }
 };

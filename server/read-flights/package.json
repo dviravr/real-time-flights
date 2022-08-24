@@ -30,6 +30,6 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mysql": "^2.18.1",
-    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.6.tgz"
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.9.tgz"
   }
 }

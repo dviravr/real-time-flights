@@ -16,5 +16,7 @@ export const config = {
   FLIGHT_RADAR_24_TOKEN: 'VmiBN2LbqmkViGhm_zUV5K8NTMGXkwiHMn9yKFDAPYs',
   REQUEST_INTERVAL: 60000, // 60 seconds
   MONGO_URI: 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mongodb.net/?retryWrites=true&w=majority',
-  REDIS_URL: 'redis://default:F7hSU7V0rW6jzNLSQghFfIC1IdaTkmgB@redis-16156.c135.eu-central-1-1.ec2.cloud.redislabs.com:16156'
+  REDIS_URL: 'redis://default:F7hSU7V0rW6jzNLSQghFfIC1IdaTkmgB@redis-16156.c135.eu-central-1-1.ec2.cloud.redislabs.com:16156',
+  WEATHER_URL: 'http://api.weatherapi.com/v1/current.json',
+  WEATHER_API_KEY: '25f1d1b49c54430b8c4171137222408'
 };
