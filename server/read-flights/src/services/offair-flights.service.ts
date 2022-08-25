@@ -1,47 +1,78 @@
-import { getAllFlightsByType, tlvDetails, tlvLocation } from './flight.service';
-import { Flight, FlightsTypes } from 'real-time-flight-lib';
+import { getAllFlightsByType, getFlightFullDetails, tlvDetails, tlvLocation } from './flight.service';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import moment from 'moment';
 import { getGeoDistance } from '../utils/geo.utils';
+import { getWeatherAtCity } from './weather.service';
+import { Message } from 'kafkajs';
+import { producer } from '../index';
 
-export const modelToBeDeparturesFlights = (apiFlights: any[], minutesRange: number): Flight[] => {
+const modelToBeDeparturesFlights = async (apiFlights: any[], minutesRange: number): Promise<Flight[]> => {
   const timeToCompare = moment().add(minutesRange, 'minutes').unix();
   const threeHoursAgo = moment().subtract(3, 'hours').unix();
 
-  return apiFlights
-      .filter((apiFlight) => !apiFlight.flight.status?.live &&
-          !apiFlight.flight.time.real.departure &&
-          apiFlight.flight.time.scheduled.departure < timeToCompare &&
-          apiFlight.flight.time.scheduled.departure > threeHoursAgo)
-      .map((apiFlight) => {
-        return {
-          id: apiFlight.flight.identification.id,
-          callSign: apiFlight.flight.identification.callsign,
-          airline: apiFlight.flight.airline.name,
-          origin: tlvDetails,
-          destination: {
-            airport: apiFlight.flight.airport.destination.code.iata,
-            city: apiFlight.flight.airport.destination.position.region.city,
-            country: apiFlight.flight.airport.destination.position.country.name,
-            weather: null,
-          },
-          scheduledTime: {
-            departureTime: apiFlight.flight.time.scheduled.departure,
-            arrivalTime: apiFlight.flight.time.scheduled.arrival,
-          },
-          distance: getGeoDistance(tlvLocation, {
-            lat: apiFlight?.flight?.airport.destination.position.latitude,
-            lon: apiFlight?.flight?.airport.destination.position.longitude,
-          }),
-        };
+  const flightsFullDetailsPromise = [];
+  apiFlights?.filter((apiFlight) => apiFlight?.flight?.identification?.id)
+      .map((apiFlight) => apiFlight.flight.identification.id)
+      .forEach((flightId) => {
+        flightsFullDetailsPromise.push(getFlightFullDetails(flightId));
       });
+  const flightsFullDetails = (await Promise.all(flightsFullDetailsPromise))
+      .filter((apiFlight) => !apiFlight.data.status?.live &&
+          !apiFlight.data.time.real.departure &&
+          apiFlight.data.time.scheduled.departure < timeToCompare &&
+          apiFlight.data.time.scheduled.departure > threeHoursAgo);
+
+  const flights: Flight[] = [];
+
+  for (const apiFlight of flightsFullDetails) {
+    flights.push({
+      id: apiFlight.data.identification.id,
+      callSign: apiFlight.data.identification.callsign,
+      airline: apiFlight.data.airline.name,
+      origin: {
+        ...tlvDetails,
+        weather: await getWeatherAtCity(tlvDetails.city),
+      },
+      destination: {
+        airport: apiFlight.data.airport.destination.code.iata,
+        city: apiFlight.data.airport.destination.position.region.city,
+        country: apiFlight.data.airport.destination.position.country.name,
+        weather: await getWeatherAtCity(apiFlight.data.airport.destination.position.region.city),
+      },
+      scheduledTime: {
+        departureTime: apiFlight.data.time.scheduled.departure,
+        arrivalTime: apiFlight.data.time.scheduled.arrival,
+      },
+      distance: getGeoDistance(tlvLocation, {
+        lat: apiFlight?.data?.airport.destination.position.latitude,
+        lon: apiFlight?.data?.airport.destination.position.longitude,
+      }),
+    });
+  }
+
+  return flights;
 };
 
-export const getNext15MinutesDepartures = async () => {
+const getNext15MinutesDepartures = async () => {
   const apiDepartures = await getAllFlightsByType(FlightsTypes.DEPARTURES, -1);
   return modelToBeDeparturesFlights(apiDepartures, 15);
 };
 
-export const getJustLandedFlights = async () => {
-  const apiDepartures = await getAllFlightsByType(FlightsTypes.DEPARTURES, -1);
-  const apiArrivals = await getAllFlightsByType(FlightsTypes.ARRIVALS, -1);
+export const sendGoingToDepartureFlights = () => {
+  getNext15MinutesDepartures().then((flights) => {
+    const messages: Message[] = [];
+    flights.forEach((flight) => {
+      messages.push({
+        key: flight.id,
+        value: JSON.stringify(flight),
+      });
+    });
+    messages.push({
+      key: 'takeoff',
+      value: JSON.stringify(flights.map((flight) => flight.id)),
+    });
+    producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
+  }).catch((err) => {
+    console.log(err);
+  });
 };

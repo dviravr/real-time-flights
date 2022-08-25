@@ -9,7 +9,7 @@ import { getWeatherAtCity } from './weather.service';
 const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {
   const flights: Flight[] = [];
   const flightsFullDetailsPromise = [];
-  apiFlights?.filter((apiFlight) => apiFlight?.flight?.status?.live && apiFlight?.flight?.identification?.id)
+  apiFlights?.filter((apiFlight) => apiFlight?.flight?.identification?.id)
       .map((apiFlight) => apiFlight.flight.identification.id)
       .forEach((flightId) => {
         flightsFullDetailsPromise.push(getFlightFullDetails(flightId));

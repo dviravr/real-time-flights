@@ -19,7 +19,7 @@ app.listen(port, async () => {
 
   await historicalFlightsConsumer.consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      // console.log(JSON.parse(message.value.toString()));
+      console.log(JSON.parse(message.value.toString()));
       saveHistoricalFlight(JSON.parse(message.value.toString()));
     },
   });

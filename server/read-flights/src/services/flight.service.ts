@@ -1,6 +1,19 @@
 import axios from 'axios';
 import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
 import { sendLog, ServicesEnum } from './logger.service';
+import moment from 'moment';
+
+export const tlvDetails: AirportMetadata = {
+  airport: 'TLV',
+  city: 'Tel Aviv',
+  country: 'Israel',
+  weather: null,
+};
+
+export const tlvLocation = {
+  lat: 32.011379,
+  lon: 34.886662,
+};
 
 export const getFlightFullDetails = (flightId: string) => {
   sendLog(ServicesEnum.FLIGHT_RADAR);
@@ -15,33 +28,21 @@ export const getFlightFullDetails = (flightId: string) => {
   });
 };
 
-export const tlvDetails: AirportMetadata = {
-  airport: 'TLV',
-  city: 'Tel Aviv',
-  country: 'Israel',
-  weather: null,
-};
-
-export const tlvLocation = {
-  lat: 32.011379,
-  lon: 34.886662,
-};
-
-export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1) => {
-  const firstPage = await getFlightsRequest(whatToRequest, page);
+export const getAllFlightsByType = async (whatToRequest: FlightsTypes, page: number = 1, timestamp?: number) => {
+  const firstPage = await getFlightsRequest(whatToRequest, page, timestamp);
   if (firstPage) {
     const totalPages: number = firstPage.page.total;
     const nextPage: number = firstPage.page.current + 1;
     let apiFlights: any[] = firstPage.data;
     for (let i = nextPage; i <= totalPages; i++) {
-      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i))?.data);
+      apiFlights = apiFlights.concat((await getFlightsRequest(whatToRequest, i, timestamp))?.data);
     }
 
     return apiFlights;
   }
 };
 
-const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) => {
+const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1, timestamp?: number) => {
   sendLog(ServicesEnum.FLIGHT_RADAR);
   try {
     const res = await axios.get(config.FLIGHT_RADAR_24_URL, {
@@ -49,7 +50,7 @@ const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1) 
         'plugin-setting[schedule][mode]': whatToRequest,
         'code': config.TLV_AIRPORT_CODE,
         'token': config.FLIGHT_RADAR_24_TOKEN,
-        // 'plugin-setting[schedule][timestamp]': 1660986000,
+        'plugin-setting[schedule][timestamp]': timestamp ?? moment().unix(),
         page,
       },
     });
