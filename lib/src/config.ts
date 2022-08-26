@@ -6,7 +6,7 @@ export const config = {
   ],
   CLOUDKARAFKA_USERNAME: 'tyj4rbyg',
   CLOUDKARAFKA_PASSWORD: 'BtD48SiGa2VjYQSttDICSDhTFBO5Of7m',
-  CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS: 'tyj4rbyg-on-air-flights',
+  CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS: 'tyj4rbyg-on-air',
   CLOUDKARAFKA_TOPIC_JUST_LANDED: 'tyj4rbyg-just-landed',
   CLOUDKARAFKA_TOPIC_TAKE_OFF: 'tyj4rbyg-take-off-flights',
   CLOUDKARAFKA_TOPIC_HISTORICAL: 'tyj4rbyg-historical-flights',
@@ -18,5 +18,7 @@ export const config = {
   MONGO_URI: 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mongodb.net/?retryWrites=true&w=majority',
   REDIS_URL: 'redis://default:Gs01PLNJ4RGcTv1PJdsqNYkMP8PHORVG@redis-14566.c250.eu-central-1-1.ec2.cloud.redislabs.com:14566',
   BIGML_USERNAME: 'HAREL-EZRA',
-  BIGML_API_KEY: 'd6601ffef42e4b99171778b01b620687617cb643'
+  BIGML_API_KEY: 'd6601ffef42e4b99171778b01b620687617cb643',
+  WEATHER_URL: 'http://api.weatherapi.com/v1/current.json',
+  WEATHER_API_KEY: '25f1d1b49c54430b8c4171137222408'
 };

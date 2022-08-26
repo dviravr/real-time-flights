@@ -29,6 +29,8 @@
     "kafkajs": "^2.1.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.7.tgz"
+    "mysql": "^2.18.1",
+    "node-cron": "^3.0.2",
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.9.tgz"
   }
 }
