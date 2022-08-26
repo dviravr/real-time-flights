@@ -27,7 +27,7 @@
     "axios": "^0.27.2",
     "express": "^4.17.1",
     "kafkajs": "^2.1.0",
-    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.9.tgz",
+    "real-time-flight-lib": "file:../../real-time-flight-lib-1.0.10.tgz",
     "redis": "^4.2.0"
   }
 }
