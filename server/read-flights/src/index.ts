@@ -16,15 +16,16 @@ app.use(json());
 
 connectMysql();
 
-schedule('* * * * *', () => { // cron job every minute
-  sendOnAirFlights();
-  sendGoingToDepartureFlights();
-});
-
-schedule('0 0 * * *', () => { // cron job every day at 00:00
-  sendHistoricalFlights().then();
-});
+// schedule('* * * * *', () => { // cron job every minute
+//   sendOnAirFlights();
+//   sendGoingToDepartureFlights();
+// });
+//
+// schedule('0 0 * * *', () => { // cron job every day at 00:00
+//   sendHistoricalFlights().then();
+// });
 
 app.listen(port, async () => {
   console.log(`Express is listening at http://localhost:${port}`);
+  sendHistoricalFlights().then();
 });

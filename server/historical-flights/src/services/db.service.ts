@@ -1,5 +1,6 @@
-import { config, Flight } from 'real-time-flight-lib';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import mongoose from 'mongoose';
+import * as stream from 'stream';
 
 export const dbConnection = mongoose.connection;
 
@@ -30,7 +31,15 @@ export const flightSchema = new mongoose.Schema<Flight>({
   },
 });
 
-export const flightModel = mongoose.model<Flight>('Flights', flightSchema);
+export const bigmlSchema = new mongoose.Schema<{ type: FlightsTypes; createDate: Date; model: string }>({
+  type: FlightsTypes,
+  createDate: Date,
+  model: String,
+});
+
+export const flightDbModel = mongoose.model<Flight>('Flights', flightSchema);
+
+export const bigmlDbModel = mongoose.model<{ type: FlightsTypes; createDate: Date; model: string }>('Models', bigmlSchema);
 
 export const connectToDB = async () => {
   await mongoose.connect(config.MONGO_URI);
@@ -40,5 +49,17 @@ export const connectToDB = async () => {
 };
 
 export const getAllFlights = async () => {
-  return flightModel.find();
+  return flightDbModel.find();
+};
+
+export const getAllFlightsByType = async (type: FlightsTypes) => {
+  if (type === FlightsTypes.ARRIVALS) {
+    return flightDbModel.find({ 'origin.airport': 'TLV' });
+  } else {
+    return flightDbModel.find({ 'destination.airport': 'TLV' });
+  }
+};
+
+export const getLastModel = async (type: FlightsTypes) => {
+  return bigmlDbModel.findOne({ type }, {}, { sort: { createDate: -1 } });
 };

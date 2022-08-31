@@ -4,6 +4,7 @@ import { exampleRouter } from './core/routes/example';
 import { config, ConsumerService } from 'real-time-flight-lib';
 import { connectToDB } from './services/db.service';
 import { bigML } from './services/bigML.service';
+import { saveHistoricalFlight } from './services/histoical-flight.service';
 
 const app = express();
 const port = 3000;
@@ -19,8 +20,7 @@ app.listen(port, async () => {
   await bigML();
   // await historicalFlightsConsumer.consumer.run({
   //   eachMessage: async ({ topic, partition, message }) => {
-  //     console.log(JSON.parse(message.value.toString()));
-  //     saveHistoricalFlight(JSON.parse(message.value.toString()));
-  //   },
+      // saveHistoricalFlight(JSON.parse(message.value.toString()));
+    // },
   // });
 });
