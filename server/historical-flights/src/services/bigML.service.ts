@@ -29,6 +29,10 @@ enum DelayRate {
   HEAVY_DELAY = 'heavy delay'
 }
 
+const isArrival = (flight: Flight): boolean => {
+  return flight.destination.airport === 'TLV';
+};
+
 const getDistanceType = (distance: number): DistanceFlightType => {
   if (distance < 1500) {
     return DistanceFlightType.SHORT;
@@ -66,7 +70,7 @@ const getPeriodOfTheYear = (day: Date): PeriodOfTheYear => {
 };
 
 const flightToBigMlModel = (flight: Flight) => {
-  return {
+  const bigmlFlight = {
     airline: flight.airline,
     origin: flight.origin.country,
     destination: flight.destination.country,
@@ -76,6 +80,14 @@ const flightToBigMlModel = (flight: Flight) => {
     dayInWeek: days[new Date(flight.actualTime.departureTime * 1000).getDay()],
     monthInYear: months[new Date(flight.actualTime.departureTime * 1000).getMonth()],
     periodOfYear: getPeriodOfTheYear(new Date(flight.actualTime.departureTime * 1000)),
+  };
+
+  return isArrival(flight) ? {
+    ...bigmlFlight,
+    departureDelayRate: getFlightDelayRate(flight.scheduledTime?.departureTime, flight.actualTime?.departureTime),
+    arrivalDelayRate: getFlightDelayRate(flight.scheduledTime?.arrivalTime, flight.actualTime?.arrivalTime),
+  } : {
+    ...bigmlFlight,
     arrivalDelayRate: getFlightDelayRate(flight.scheduledTime?.arrivalTime, flight.actualTime?.arrivalTime),
     departureDelayRate: getFlightDelayRate(flight.scheduledTime?.departureTime, flight.actualTime?.departureTime),
   };
@@ -134,23 +146,13 @@ export const createModelByType = async (type: FlightsTypes, callback: Function) 
 };
 
 export const predictFlight = async (flight: Flight, callback: Function) => {
-//   const flight = {
-//     airline: 'Transavia',
-//     origin: 'France',
-//     destination: 'Israel',
-//     originWeather: 'Clear',
-//     destinationWeather: 'Sunny',
-//     distanceFlightType: DistanceFlightType.MID,
-//     dayInWeek: days[3],
-//     monthInYear: months[7],
-//     departureDelayRate: DelayRate.HEAVY_DELAY,
-//     periodOfYear: PeriodOfTheYear.SUMMER,
-//   };
-  const flightType = flight.origin.airport === 'TLV' ? FlightsTypes.DEPARTURES : FlightsTypes.ARRIVALS;
+  const bigmlFlight = flightToBigMlModel(flight);
+
+  const flightType = isArrival(flight) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
   const lastModel = await getLastModel(flightType);
 
   const prediction = new Prediction(connection);
-  prediction.create(lastModel, flight, (error, predictionInfo) => {
+  prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
     if (!error && predictionInfo) {
       return callback(predictionInfo.object.output, 200);
     } else {

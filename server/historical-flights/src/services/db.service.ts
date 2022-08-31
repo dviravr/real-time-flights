@@ -32,7 +32,7 @@ export const flightSchema = new mongoose.Schema<Flight>({
 });
 
 export const bigmlSchema = new mongoose.Schema<{ type: FlightsTypes; createDate: Date; model: string }>({
-  type: FlightsTypes,
+  type: String,
   createDate: Date,
   model: String,
 });
@@ -53,7 +53,7 @@ export const getAllFlights = async () => {
 };
 
 export const getAllFlightsByType = async (type: FlightsTypes) => {
-  if (type === FlightsTypes.ARRIVALS) {
+  if (type === FlightsTypes.DEPARTURES) {
     return flightDbModel.find({ 'origin.airport': 'TLV' });
   } else {
     return flightDbModel.find({ 'destination.airport': 'TLV' });
@@ -61,5 +61,5 @@ export const getAllFlightsByType = async (type: FlightsTypes) => {
 };
 
 export const getLastModel = async (type: FlightsTypes) => {
-  return bigmlDbModel.findOne({ type }, {}, { sort: { createDate: -1 } });
+  return bigmlDbModel.findOne({ type }, {}, { sort: { createDate: -1 } }).exec();
 };
