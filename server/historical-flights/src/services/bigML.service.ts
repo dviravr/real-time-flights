@@ -1,14 +1,12 @@
-import { bigmlDbModel, getAllFlights, getAllFlightsByType } from './db.service';
+import { bigmlDbModel, getAllFlightsByType, getLastModel } from './db.service';
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import { isNil } from 'lodash';
 import { HebrewCalendar } from '@hebcal/core';
-import { BigML, Source, Prediction, Dataset, Model } from 'bigml';
+import { BigML, Dataset, Model, Prediction, Source } from 'bigml';
 import { Parser } from 'json2csv';
 import { writeFile } from 'fs';
 
 const connection = new BigML('DVIRAVR', '50193977c80c720a87bb5540867fc84c248e26bc');
-const departuresModel = 'model/630b7f37aba2df5330000aec';
-const arrivalsModel = 'model/630b7ece8f679a2d4a00098d';
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -31,7 +29,7 @@ enum DelayRate {
   HEAVY_DELAY = 'heavy delay'
 }
 
-const getFlightTypeByDistance = (distance: number): DistanceFlightType => {
+const getDistanceType = (distance: number): DistanceFlightType => {
   if (distance < 1500) {
     return DistanceFlightType.SHORT;
   } else if (distance < 3500) {
@@ -41,6 +39,9 @@ const getFlightTypeByDistance = (distance: number): DistanceFlightType => {
 };
 
 const getFlightDelayRate = (scheduledTime: number, actualTime: number): DelayRate => {
+  if (!scheduledTime || !actualTime) {
+    return undefined;
+  }
   const minute = 60; // 60 sec
   const hour = 60 * minute; // 60 minute
   if (actualTime - scheduledTime < 15 * minute) {
@@ -71,75 +72,13 @@ const flightToBigMlModel = (flight: Flight) => {
     destination: flight.destination.country,
     originWeather: flight.origin.weather,
     destinationWeather: flight.destination.weather,
-    distanceFlightType: getFlightTypeByDistance(flight.distance),
+    distanceFlightType: getDistanceType(flight.distance),
     dayInWeek: days[new Date(flight.actualTime.departureTime * 1000).getDay()],
     monthInYear: months[new Date(flight.actualTime.departureTime * 1000).getMonth()],
     periodOfYear: getPeriodOfTheYear(new Date(flight.actualTime.departureTime * 1000)),
-    arrivalDelayRate: getFlightDelayRate(flight.scheduledTime.arrivalTime, flight.actualTime.arrivalTime),
-    departureDelayRate: getFlightDelayRate(flight.scheduledTime.departureTime, flight.actualTime.departureTime),
+    arrivalDelayRate: getFlightDelayRate(flight.scheduledTime?.arrivalTime, flight.actualTime?.arrivalTime),
+    departureDelayRate: getFlightDelayRate(flight.scheduledTime?.departureTime, flight.actualTime?.departureTime),
   };
-};
-
-const createDatafile = async () => {
-  const flights: Flight[] = await getAllFlights();
-
-  const flightsModel = flights.map((flight) => {
-    return flightToBigMlModel(flight);
-  });
-  const fields = Object.keys(flightsModel[0]);
-
-  const parser = new Parser({ fields });
-  return parser.parse(flightsModel);
-};
-
-export const bigML = async () => {
-  const flight = {
-    airline: 'Transavia',
-    origin: 'France',
-    destination: 'Israel',
-    originWeather: 'Clear',
-    destinationWeather: 'Sunny',
-    distanceFlightType: DistanceFlightType.MID,
-    dayInWeek: days[3],
-    monthInYear: months[7],
-    departureDelayRate: DelayRate.HEAVY_DELAY,
-    periodOfYear: PeriodOfTheYear.SUMMER,
-  };
-
-  const csv = await createDatafile();
-
-  try {
-    writeFile('file.csv', csv, (err) => {
-      if (err) throw err;
-      const source = new Source(connection);
-      source.create('C:\\Users\\dvira\\dev\\real-time-flights\\server\\historical-flights\\file.csv', (error, sourceInfo) => {
-        if (!error && sourceInfo) {
-          const dataset = new Dataset(connection);
-          dataset.create(sourceInfo.resource, (error, datasetInfo) => {
-            if (!error && datasetInfo) {
-              const model = new Model(connection);
-              model.create(datasetInfo.resource, (error, modelInfo) => {
-                if (!error && modelInfo) {
-                  const prediction = new Prediction(connection);
-                  prediction.create(modelInfo.resource, flight, (error, predictionInfo) => {
-                    if (!error && predictionInfo) {
-                      console.log(predictionInfo);
-                    } else {
-                      console.log(error);
-                    }
-                  });
-                }
-              });
-            }
-          });
-        } else {
-          console.log(error);
-        }
-      });
-    });
-  } catch (e) {
-    console.log(e);
-  }
 };
 
 const createFlightsDataFile = async (type: FlightsTypes) => {
@@ -154,14 +93,15 @@ const createFlightsDataFile = async (type: FlightsTypes) => {
   return parser.parse(flightsModel);
 };
 
-export const createArrivalsModel = async (callback: Function) => {
-  const arrivalsCsv = await createFlightsDataFile(FlightsTypes.ARRIVALS);
+export const createModelByType = async (type: FlightsTypes, callback: Function) => {
+  const csv = await createFlightsDataFile(type);
+  const fileName = `${type}.csv`;
 
   try {
-    writeFile('arrivals.csv', arrivalsCsv, (err) => {
+    writeFile(fileName, csv, (err) => {
       if (err) throw err;
       const source = new Source(connection);
-      source.create('C:\\Users\\dvira\\dev\\real-time-flights\\server\\historical-flights\\arrivals.csv', (error, sourceInfo) => {
+      source.create(`C:\\Users\\dvira\\dev\\real-time-flights\\server\\historical-flights\\${fileName}`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
           const dataset = new Dataset(connection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
@@ -169,22 +109,54 @@ export const createArrivalsModel = async (callback: Function) => {
               const model = new Model(connection);
               model.create(datasetInfo.resource, async (error, modelInfo) => {
                 if (!error && modelInfo) {
-                  const res = await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource);
-                  if (res?._id) {
-                    callback();
+                  try {
+                    await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource);
+                    return callback('model was created', 200);
+                  } catch (e) {
+                    return callback('failed to save model to db', 400);
                   }
+                } else {
+                  return callback('failed to create model', 400);
                 }
               });
+            } else {
+              return callback('failed to create dataset', 400);
             }
           });
         } else {
-          console.log(error);
+          return callback('failed to create source', 400);
         }
       });
     });
   } catch (e) {
-    console.log(e);
+    return callback('failed to write to file', 400);
   }
+};
+
+export const predictFlight = async (flight: Flight, callback: Function) => {
+//   const flight = {
+//     airline: 'Transavia',
+//     origin: 'France',
+//     destination: 'Israel',
+//     originWeather: 'Clear',
+//     destinationWeather: 'Sunny',
+//     distanceFlightType: DistanceFlightType.MID,
+//     dayInWeek: days[3],
+//     monthInYear: months[7],
+//     departureDelayRate: DelayRate.HEAVY_DELAY,
+//     periodOfYear: PeriodOfTheYear.SUMMER,
+//   };
+  const flightType = flight.origin.airport === 'TLV' ? FlightsTypes.DEPARTURES : FlightsTypes.ARRIVALS;
+  const lastModel = await getLastModel(flightType);
+
+  const prediction = new Prediction(connection);
+  prediction.create(lastModel, flight, (error, predictionInfo) => {
+    if (!error && predictionInfo) {
+      return callback(predictionInfo.object.output, 200);
+    } else {
+      return callback('failed to predict flight delay', 400);
+    }
+  });
 };
 
 export const saveModelToDB = async (type: FlightsTypes, model: string) => {
@@ -194,10 +166,5 @@ export const saveModelToDB = async (type: FlightsTypes, model: string) => {
     createDate: new Date(),
   });
 
-  try {
-    const res = await newBigmlModel.save();
-    return res._id;
-  } catch (e) {
-    return e;
-  }
+  return await newBigmlModel.save();
 };
