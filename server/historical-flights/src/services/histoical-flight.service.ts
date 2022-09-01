@@ -1,13 +1,14 @@
 import { Flight } from 'real-time-flight-lib';
-import { flightModel } from './db.service';
+import { flightDbModel } from './db.service';
+import { isNil } from 'lodash';
 
 const isFlightExists = async (flight: Flight) => {
-  const dbFlight = await flightModel.findOne({ id: flight.id, actualTime: flight.actualTime }).exec();
-  return Boolean(dbFlight);
+  const dbFlight = await flightDbModel.findOne({ id: flight.id, actualTime: flight.actualTime }).exec();
+  return !isNil(dbFlight);
 };
 
 export const saveHistoricalFlight = async (flight: Flight) => {
-  const newFlight = new flightModel(flight);
+  const newFlight = new flightDbModel(flight);
 
   if (!(await isFlightExists(flight))) {
     newFlight.save((error, result) => {
