@@ -1,6 +1,5 @@
 import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import mongoose from 'mongoose';
-import * as stream from 'stream';
 
 export const dbConnection = mongoose.connection;
 
@@ -58,6 +57,24 @@ export const getAllFlightsByType = async (type: FlightsTypes) => {
   } else {
     return flightDbModel.find({ 'destination.airport': 'TLV' });
   }
+};
+
+export const getFlightsByDateAndType = async (type: FlightsTypes, start: Date, end: Date) => {
+  const filterType = flightDbModel.find({
+    $and:
+        [
+          { 'scheduledTime.departureTime': { $gte: start.getTime() / 1000 } },
+          { 'scheduledTime.departureTime': { $lte: end.getTime() / 1000 } },
+        ],
+  });
+  if (type === FlightsTypes.DEPARTURES) {
+    filterType.find({ 'origin.airport': 'TLV' });
+  } else {
+    filterType.find({ 'destination.airport': 'TLV' });
+  }
+  console.log(filterType.getFilter());
+
+  return filterType.exec();
 };
 
 export const getLastModel = async (type: FlightsTypes) => {

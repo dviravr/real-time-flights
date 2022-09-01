@@ -1,4 +1,4 @@
-import { bigmlDbModel, getAllFlightsByType, getLastModel } from './db.service';
+import { bigmlDbModel, getAllFlightsByType, getFlightsByDateAndType, getLastModel } from './db.service';
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import { isNil } from 'lodash';
 import { HebrewCalendar } from '@hebcal/core';
@@ -159,6 +159,11 @@ export const predictFlight = async (flight: Flight, callback: Function) => {
       return callback('failed to predict flight delay', 400);
     }
   });
+};
+
+export const createModelByTypeAndDate = async (type: FlightsTypes, startDate: Date, endDate: Date, cb: Function) => {
+  const flights = await getFlightsByDateAndType(type, startDate, endDate);
+  console.log('');
 };
 
 export const saveModelToDB = async (type: FlightsTypes, model: string) => {
