@@ -53,9 +53,9 @@ export const getAllFlights = async () => {
 
 export const getAllFlightsByType = async (type: FlightsTypes) => {
   if (type === FlightsTypes.DEPARTURES) {
-    return flightDbModel.find({ 'origin.airport': 'TLV' });
+    return flightDbModel.find({ 'origin.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
   } else {
-    return flightDbModel.find({ 'destination.airport': 'TLV' });
+    return flightDbModel.find({ 'destination.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
   }
 };
 

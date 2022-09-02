@@ -30,7 +30,7 @@ enum DelayRate {
 }
 
 const isArrival = (flight: Flight): boolean => {
-  return flight.destination.airport === 'TLV';
+  return flight?.destination?.airport === 'TLV';
 };
 
 const getDistanceType = (distance: number): DistanceFlightType => {
@@ -93,9 +93,7 @@ const flightToBigMlModel = (flight: Flight) => {
   };
 };
 
-const createFlightsDataFile = async (type: FlightsTypes) => {
-  const flights: Flight[] = await getAllFlightsByType(type);
-
+const createFlightsDataFile = async (flights: Flight[]) => {
   const flightsModel = flights.map((flight) => {
     return flightToBigMlModel(flight);
   });
@@ -105,10 +103,7 @@ const createFlightsDataFile = async (type: FlightsTypes) => {
   return parser.parse(flightsModel);
 };
 
-export const createModelByType = async (type: FlightsTypes, callback: Function) => {
-  const csv = await createFlightsDataFile(type);
-  const fileName = `${type}.csv`;
-
+const createModal = (fileName: string, csv, cb: Function) => {
   try {
     writeFile(fileName, csv, (err) => {
       if (err) throw err;
@@ -123,47 +118,70 @@ export const createModelByType = async (type: FlightsTypes, callback: Function) 
                 if (!error && modelInfo) {
                   try {
                     await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource);
-                    return callback('model was created', 200);
+                    return cb('model was created', 200);
                   } catch (e) {
-                    return callback('failed to save model to db', 400);
+                    return cb('failed to save model to db', 400);
                   }
                 } else {
-                  return callback('failed to create model', 400);
+                  return cb('failed to create model', 400);
                 }
               });
             } else {
-              return callback('failed to create dataset', 400);
+              return cb('failed to create dataset', 400);
             }
           });
         } else {
-          return callback('failed to create source', 400);
+          return cb('failed to create source', 400);
         }
       });
     });
   } catch (e) {
-    return callback('failed to write to file', 400);
+    return cb('failed to write to file', 400);
   }
 };
 
-export const predictFlight = async (flight: Flight, callback: Function) => {
-  const bigmlFlight = flightToBigMlModel(flight);
+export const createModelByType = async (type: FlightsTypes, cb: Function) => {
+  const flights: Flight[] = await getAllFlightsByType(type);
+  const csv = await createFlightsDataFile(flights);
+  const fileName = `${type}.csv`;
 
-  const flightType = isArrival(flight) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
+  return createModal(fileName, csv, cb);
+};
+
+export const predictFlights = async (flights: Flight[], cb: Function) => {
+  const flightType = isArrival(flights[0]) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
   const lastModel = await getLastModel(flightType);
+  const predictedFlights = [];
 
-  const prediction = new Prediction(connection);
-  prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
-    if (!error && predictionInfo) {
-      return callback(predictionInfo.object.output, 200);
-    } else {
-      return callback('failed to predict flight delay', 400);
-    }
+  new Promise((resolve, reject) => {
+    const prediction = new Prediction(connection);
+    flights.forEach((flight) => {
+      const bigmlFlight = flightToBigMlModel(flight);
+
+      prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
+        if (!error && predictionInfo) {
+          predictedFlights.push({ id: flight.id, prediction: predictionInfo.object.output });
+          if (predictedFlights.length === flights.length) {
+            resolve(predictedFlights);
+          }
+        } else {
+          reject(new Error('failed to predict flight delay'));
+        }
+      });
+    });
+  }).then((predicted) => {
+    return cb(predicted, 200);
+  }).catch((error: Error) => {
+    return cb(error.message, 400);
   });
 };
 
-export const createModelByTypeAndDate = async (type: FlightsTypes, startDate: Date, endDate: Date, cb: Function) => {
+export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Date, endDate: Date, cb: Function) => {
   const flights = await getFlightsByDateAndType(type, startDate, endDate);
-  console.log('');
+  const csv = await createFlightsDataFile(flights);
+  const fileName = `${type}${startDate.getTime()}-${endDate.getTime()}.csv`;
+
+  return createModal(fileName, csv, cb);
 };
 
 export const saveModelToDB = async (type: FlightsTypes, model: string) => {

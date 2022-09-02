@@ -1,5 +1,5 @@
 import express from 'express';
-import { createModelByType, createModelByTypeAndDate, predictFlight } from '../../services/bigML.service';
+import { createModelByType, createModelByTypeAndDates, predictFlights } from '../../services/bigML.service';
 import { FlightsTypes } from 'real-time-flight-lib';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/bigml/createArrivalsModelByDate', ((req, res) => {
   const startDate = new Date(1661806800 * 1000);
   const endDate = new Date(1661893200 * 1000);
-  createModelByTypeAndDate(
+  createModelByTypeAndDates(
       FlightsTypes.DEPARTURES,
       startDate,
       endDate,
@@ -23,7 +23,7 @@ router.post('/bigml/createDeparturesModel', ((req, res) => {
 }));
 
 router.post('/bigml/predictFlight', ((req, res) => {
-  predictFlight(req.body.flight, (body: string, status: number) => res.status(status).send(body));
+  predictFlights(req.body.flights, (body: Array<{ id: string; prediction: string }> | string, status: number) => res.status(status).send(body));
 }));
 
 export { router as bigmlRouter };
