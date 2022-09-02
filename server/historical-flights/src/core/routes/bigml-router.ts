@@ -1,6 +1,7 @@
 import express from 'express';
-import { createModelByType, createModelByTypeAndDates, predictFlights } from '../../services/bigML.service';
+import { createModelByType, createModelByTypeAndDates } from '../../services/bigML.service';
 import { FlightsTypes } from 'real-time-flight-lib';
+import { predictFlights } from '../../services/flight-prediction.service';
 
 const router = express.Router();
 

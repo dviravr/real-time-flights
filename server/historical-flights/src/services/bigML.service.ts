@@ -1,15 +1,28 @@
-import { bigmlDbModel, getAllFlightsByType, getFlightsByDateAndType, getLastModel } from './db.service';
+import { bigmlDbModel } from './db.service';
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import { isNil } from 'lodash';
 import { HebrewCalendar } from '@hebcal/core';
-import { BigML, Dataset, Model, Prediction, Source } from 'bigml';
+import { BigML, Dataset, Model, Source } from 'bigml';
 import { Parser } from 'json2csv';
 import { writeFile } from 'fs';
+import { getAllFlightsByType, getFlightsByDateAndType } from './histoical-flight.service';
 
 const connection = new BigML('DVIRAVR', '50193977c80c720a87bb5540867fc84c248e26bc');
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+export interface BigmlModelModel {
+  type: FlightsTypes;
+  createDate: Date;
+  model: string;
+  modelDates?: ModelDates;
+}
+
+export interface ModelDates {
+  startDate: Date;
+  endDate: Date;
+}
 
 enum PeriodOfTheYear {
   REGULAR = 'regular',
@@ -29,7 +42,7 @@ enum DelayRate {
   HEAVY_DELAY = 'heavy delay'
 }
 
-const isArrival = (flight: Flight): boolean => {
+export const isArrival = (flight: Flight): boolean => {
   return flight?.destination?.airport === 'TLV';
 };
 
@@ -69,7 +82,7 @@ const getPeriodOfTheYear = (day: Date): PeriodOfTheYear => {
   return PeriodOfTheYear.REGULAR;
 };
 
-const flightToBigMlModel = (flight: Flight) => {
+export const flightToBigMlModel = (flight: Flight) => {
   const bigmlFlight = {
     airline: flight.airline,
     origin: flight.origin.country,
@@ -148,34 +161,6 @@ export const createModelByType = async (type: FlightsTypes, cb: Function) => {
   return createModal(fileName, csv, cb);
 };
 
-export const predictFlights = async (flights: Flight[], cb: Function) => {
-  const flightType = isArrival(flights[0]) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
-  const lastModel = await getLastModel(flightType);
-  const predictedFlights = [];
-
-  new Promise((resolve, reject) => {
-    const prediction = new Prediction(connection);
-    flights.forEach((flight) => {
-      const bigmlFlight = flightToBigMlModel(flight);
-
-      prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
-        if (!error && predictionInfo) {
-          predictedFlights.push({ id: flight.id, prediction: predictionInfo.object.output });
-          if (predictedFlights.length === flights.length) {
-            resolve(predictedFlights);
-          }
-        } else {
-          reject(new Error('failed to predict flight delay'));
-        }
-      });
-    });
-  }).then((predicted) => {
-    return cb(predicted, 200);
-  }).catch((error: Error) => {
-    return cb(error.message, 400);
-  });
-};
-
 export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Date, endDate: Date, cb: Function) => {
   const flights = await getFlightsByDateAndType(type, startDate, endDate);
   const csv = await createFlightsDataFile(flights);
@@ -192,4 +177,8 @@ export const saveModelToDB = async (type: FlightsTypes, model: string) => {
   });
 
   return await newBigmlModel.save();
+};
+
+export const getLastModel = async (type: FlightsTypes, modelDates?: ModelDates) => {
+  return bigmlDbModel.findOne({ type, modelDates }, {}, { sort: { createDate: -1 } }).exec();
 };

@@ -1,9 +1,10 @@
 import express from 'express';
 import { json } from 'body-parser';
-import { config, ConsumerService } from 'real-time-flight-lib';
+import { config, ConsumerService, FlightsTypes } from 'real-time-flight-lib';
 import { connectToDB } from './services/db.service';
 import { saveHistoricalFlight } from './services/histoical-flight.service';
 import { bigmlRouter } from './core/routes/bigml-router';
+import { getLastModel } from './services/bigML.service';
 
 const app = express();
 const port = 3000;

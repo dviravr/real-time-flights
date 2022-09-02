@@ -1,4 +1,4 @@
-import { Flight } from 'real-time-flight-lib';
+import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import { flightDbModel } from './db.service';
 import { isNil } from 'lodash';
 
@@ -19,6 +19,31 @@ export const saveHistoricalFlight = async (flight: Flight) => {
       }
     });
   } else {
-    console.log(flight.id, 'found');
+    console.log(flight.id, 'already exists');
   }
+};
+
+export const getAllFlightsByType = async (type: FlightsTypes) => {
+  if (type === FlightsTypes.DEPARTURES) {
+    return flightDbModel.find({ 'origin.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
+  } else {
+    return flightDbModel.find({ 'destination.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
+  }
+};
+
+export const getFlightsByDateAndType = async (type: FlightsTypes, start: Date, end: Date) => {
+  const filterType = flightDbModel.find({
+    'scheduledTime.departureTime': {
+      $gte: start.getTime() / 1000,
+      $lte: end.getTime() / 1000,
+    },
+  });
+  if (type === FlightsTypes.DEPARTURES) {
+    filterType.find({ 'origin.airport': 'TLV' });
+  } else {
+    filterType.find({ 'destination.airport': 'TLV' });
+  }
+  console.log(filterType.getFilter());
+
+  return filterType.exec();
 };

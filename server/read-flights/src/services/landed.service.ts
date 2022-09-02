@@ -67,7 +67,7 @@ export const sendHistoricalFlights = async () => {
   const timeToCheck = moment().subtract(1, 'd').unix();
   const [arrivalsApi, departuresApi] = await Promise.all([
     getAllFlightsByType(FlightsTypes.ARRIVALS, 1, timeToCheck),
-    getAllFlightsByType(FlightsTypes.DEPARTURES, -1, timeToCheck),
+    getAllFlightsByType(FlightsTypes.DEPARTURES, 1, timeToCheck),
   ]);
 
   const [arrivals, departures] = await Promise.all([
