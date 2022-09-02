@@ -1,6 +1,7 @@
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
 import { flightDbModel } from './db.service';
 import { isNil } from 'lodash';
+import { Moment } from 'moment';
 
 const isFlightExists = async (flight: Flight) => {
   const dbFlight = await flightDbModel.findOne({ id: flight.id, actualTime: flight.actualTime }).exec();
@@ -31,11 +32,11 @@ export const getAllFlightsByType = async (type: FlightsTypes) => {
   }
 };
 
-export const getFlightsByDateAndType = async (type: FlightsTypes, start: Date, end: Date) => {
+export const getFlightsByDateAndType = async (type: FlightsTypes, startDate: Moment, endDate: Moment) => {
   const filterType = flightDbModel.find({
     'scheduledTime.departureTime': {
-      $gte: start.getTime() / 1000,
-      $lte: end.getTime() / 1000,
+      $gte: startDate.unix(),
+      $lte: endDate.unix(),
     },
   });
   if (type === FlightsTypes.DEPARTURES) {

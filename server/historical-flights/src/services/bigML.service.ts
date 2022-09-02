@@ -6,6 +6,7 @@ import { BigML, Dataset, Model, Source } from 'bigml';
 import { Parser } from 'json2csv';
 import { writeFile } from 'fs';
 import { getAllFlightsByType, getFlightsByDateAndType } from './histoical-flight.service';
+import moment, { Moment } from 'moment';
 
 const connection = new BigML('DVIRAVR', '50193977c80c720a87bb5540867fc84c248e26bc');
 
@@ -161,12 +162,12 @@ export const createModelByType = async (type: FlightsTypes, cb: Function) => {
   return createModal(fileName, csv, cb);
 };
 
-export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Date, endDate: Date, cb: Function) => {
+export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Moment, endDate: Moment, cb: Function) => {
   const flights = await getFlightsByDateAndType(type, startDate, endDate);
   const csv = await createFlightsDataFile(flights);
-  const fileName = `${type}${startDate.getTime()}-${endDate.getTime()}.csv`;
+  const fileName = `${type}${moment(startDate).unix()}-${moment(endDate).unix()}.csv`;
 
-  return createModal(fileName, csv, cb, { startDate, endDate });
+  return createModal(fileName, csv, cb, { startDate: startDate.toDate(), endDate: endDate.toDate() });
 };
 
 export const saveModelToDB = async (type: FlightsTypes, model: string, modelDates?: ModelDates) => {
