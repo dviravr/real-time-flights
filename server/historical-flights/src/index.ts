@@ -4,7 +4,7 @@ import { config, ConsumerService, FlightsTypes } from 'real-time-flight-lib';
 import { connectToDB } from './services/db.service';
 import { saveHistoricalFlight } from './services/histoical-flight.service';
 import { bigmlRouter } from './core/routes/bigml-router';
-import { getLastModel } from './services/bigML.service';
+import { createModelByType } from './services/bigML.service';
 
 const app = express();
 const port = 3000;

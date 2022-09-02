@@ -116,12 +116,12 @@ const createFlightsDataFile = async (flights: Flight[]) => {
   return parser.parse(flightsModel);
 };
 
-const createModal = (fileName: string, csv, cb: Function) => {
+const createModal = (fileName: string, csv, cb: Function, modelDates?: ModelDates) => {
   try {
-    writeFile(fileName, csv, (err) => {
+    writeFile(`${__dirname}\\${fileName}`, csv, (err) => {
       if (err) throw err;
       const source = new Source(connection);
-      source.create(`C:\\Users\\dvira\\dev\\real-time-flights\\server\\historical-flights\\${fileName}`, (error, sourceInfo) => {
+      source.create(`${__dirname}\\${fileName}`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
           const dataset = new Dataset(connection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
@@ -130,7 +130,7 @@ const createModal = (fileName: string, csv, cb: Function) => {
               model.create(datasetInfo.resource, async (error, modelInfo) => {
                 if (!error && modelInfo) {
                   try {
-                    await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource);
+                    await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource, modelDates);
                     return cb('model was created', 200);
                   } catch (e) {
                     return cb('failed to save model to db', 400);
@@ -166,13 +166,14 @@ export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: D
   const csv = await createFlightsDataFile(flights);
   const fileName = `${type}${startDate.getTime()}-${endDate.getTime()}.csv`;
 
-  return createModal(fileName, csv, cb);
+  return createModal(fileName, csv, cb, { startDate, endDate });
 };
 
-export const saveModelToDB = async (type: FlightsTypes, model: string) => {
+export const saveModelToDB = async (type: FlightsTypes, model: string, modelDates?: ModelDates) => {
   const newBigmlModel = new bigmlDbModel({
     model,
     type,
+    modelDates,
     createDate: new Date(),
   });
 
