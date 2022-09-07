@@ -8,13 +8,10 @@ import { getWeatherAtCity } from './weather.service';
 
 const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {
   const flights: Flight[] = [];
-  const flightsFullDetailsPromise = [];
-  apiFlights?.filter((apiFlight) => apiFlight?.flight?.identification?.id)
-      .map((apiFlight) => apiFlight.flight.identification.id)
-      .forEach((flightId) => {
-        flightsFullDetailsPromise.push(getFlightFullDetails(flightId));
-      });
-  const flightsFullDetails = (await Promise.all(flightsFullDetailsPromise)).filter((apiFlights) => apiFlights?.data?.status.live);
+  const flightsFullDetailsPromise = apiFlights
+      ?.filter((apiFlight) => apiFlight?.flight?.identification?.id && apiFlight?.flight?.status?.live)
+      .map((apiFlight) => getFlightFullDetails(apiFlight.flight.identification.id));
+  const flightsFullDetails = (await Promise.all(flightsFullDetailsPromise)).filter((apiFlights) => apiFlights?.data?.status?.live);
   for (const apiFlight of flightsFullDetails) {
     const [originWeather, destinationWeather] = await Promise.all([
       getWeatherAtCity(apiFlight?.data?.airport.origin.position.region.city),

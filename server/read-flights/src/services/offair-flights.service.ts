@@ -1,4 +1,4 @@
-import { getAllFlightsByType, getFlightFullDetails, tlvDetails, tlvLocation } from './flight.service';
+import { getAllFlightsByType, getFlightFullDetails } from './flight.service';
 import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import moment from 'moment';
 import { getGeoDistance } from '../utils/geo.utils';
@@ -30,8 +30,8 @@ const modelToBeDeparturesFlights = async (apiFlights: any[], minutesRange: numbe
       callSign: apiFlight.data.identification.callsign,
       airline: apiFlight.data.airline.name,
       origin: {
-        ...tlvDetails,
-        weather: await getWeatherAtCity(tlvDetails.city),
+        ...config.TLV_DETAILS,
+        weather: await getWeatherAtCity(config.TLV_DETAILS.city),
       },
       destination: {
         airport: apiFlight.data.airport.destination.code.iata,
@@ -43,7 +43,7 @@ const modelToBeDeparturesFlights = async (apiFlights: any[], minutesRange: numbe
         departureTime: apiFlight.data.time.scheduled.departure,
         arrivalTime: apiFlight.data.time.scheduled.arrival,
       },
-      distance: getGeoDistance(tlvLocation, {
+      distance: getGeoDistance(config.TLV_LOCATION, {
         lat: apiFlight?.data?.airport.destination.position.latitude,
         lon: apiFlight?.data?.airport.destination.position.longitude,
       }),

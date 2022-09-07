@@ -127,6 +127,7 @@
 }
 
 .styled-table {
+  z-index: 1;
   border-collapse: collapse;
   margin-right: 25px;
   font-size: 0.9em;

@@ -3,18 +3,6 @@ import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
 import { sendLog, ServicesEnum } from './logger.service';
 import moment from 'moment';
 
-export const tlvDetails: AirportMetadata = {
-  airport: 'TLV',
-  city: 'Tel Aviv',
-  country: 'Israel',
-  weather: null,
-};
-
-export const tlvLocation = {
-  lat: 32.011379,
-  lon: 34.886662,
-};
-
 export const getFlightFullDetails = (flightId: string) => {
   sendLog(ServicesEnum.FLIGHT_RADAR);
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {
@@ -48,7 +36,7 @@ const getFlightsRequest = async (whatToRequest: FlightsTypes, page: number = 1, 
     const res = await axios.get(config.FLIGHT_RADAR_24_URL, {
       params: {
         'plugin-setting[schedule][mode]': whatToRequest,
-        'code': config.TLV_AIRPORT_CODE,
+        'code': config.TLV_DETAILS.airport,
         'token': config.FLIGHT_RADAR_24_TOKEN,
         'plugin-setting[schedule][timestamp]': timestamp ?? moment().unix(),
         page,

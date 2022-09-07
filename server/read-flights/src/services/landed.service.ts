@@ -1,6 +1,6 @@
 import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { getWeatherAtCity } from './weather.service';
-import { getAllFlightsByType, tlvDetails, tlvLocation } from './flight.service';
+import { getAllFlightsByType } from './flight.service';
 import { getGeoDistance } from '../utils/geo.utils';
 import { Message } from 'kafkajs';
 import { producer } from '../index';
@@ -12,7 +12,7 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
       .filter((apiFlight) => apiFlight?.flight?.time.real.departure && apiFlight?.flight?.time.real.arrival);
   for (const apiFlight of apiFlights) {
     const [tlvWeather, anotherWeather] = await Promise.all([
-      getWeatherAtCity(tlvDetails.city),
+      getWeatherAtCity(config.TLV_DETAILS.city),
       getWeatherAtCity(type === FlightsTypes.ARRIVALS ?
           apiFlight?.flight?.airport.origin.position.region.city :
           apiFlight?.flight?.airport.destination.position.region.city),
@@ -22,7 +22,7 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
       callSign: apiFlight?.flight?.identification.callsign,
       airline: apiFlight?.flight?.airline?.name,
       origin: type === FlightsTypes.DEPARTURES ? {
-        ...tlvDetails,
+        ...config.TLV_DETAILS,
         weather: tlvWeather,
       } : {
         airport: apiFlight?.flight?.airport.origin.code.iata,
@@ -31,7 +31,7 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
         weather: anotherWeather,
       },
       destination: type === FlightsTypes.ARRIVALS ? {
-        ...tlvDetails,
+        ...config.TLV_DETAILS,
         weather: tlvWeather,
       } : {
         airport: apiFlight?.flight?.airport.destination.code.iata,
@@ -48,11 +48,11 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
         arrivalTime: apiFlight?.flight?.time.scheduled.arrival,
       },
       distance: getGeoDistance(
-          type === FlightsTypes.DEPARTURES ? tlvLocation : {
+          type === FlightsTypes.DEPARTURES ? config.TLV_LOCATION : {
             lat: apiFlight?.flight?.airport.origin.position.latitude,
             lon: apiFlight?.flight?.airport.origin.position.longitude,
           },
-          type === FlightsTypes.ARRIVALS ? tlvLocation : {
+          type === FlightsTypes.ARRIVALS ? config.TLV_LOCATION : {
             lat: apiFlight?.flight?.airport.destination.position.latitude,
             lon: apiFlight?.flight?.airport.destination.position.longitude,
           },

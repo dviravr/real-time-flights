@@ -27,5 +27,6 @@ connectMysql();
 
 app.listen(port, async () => {
   console.log(`Express is listening at http://localhost:${port}`);
-  sendHistoricalFlights().then();
+  sendOnAirFlights();
+// sendHistoricalFlights().then();
 });
