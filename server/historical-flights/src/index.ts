@@ -6,7 +6,7 @@ import { saveHistoricalFlight } from './services/histoical-flight.service';
 import { bigmlRouter } from './core/routes/bigml-router';
 
 const app = express();
-const port = 3000;
+const port = 5003;
 
 export const historicalFlightsConsumer = new ConsumerService('historical-flights', config.CLOUDKARAFKA_TOPIC_HISTORICAL);
 

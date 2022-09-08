@@ -6,37 +6,36 @@ import { Message } from 'kafkajs';
 import { producer } from '../index';
 import moment from 'moment';
 
-const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Promise<Flight[]> => {
+const modelHistoricalFlights = async (apiFlights: any[], isArrival: boolean): Promise<Flight[]> => {
+  const tlvWeather = await getWeatherAtCity(config.TLV_DETAILS.city);
   const flights: Flight[] = [];
   apiFlights = apiFlights
       .filter((apiFlight) => apiFlight?.flight?.time.real.departure && apiFlight?.flight?.time.real.arrival);
+
   for (const apiFlight of apiFlights) {
-    const [tlvWeather, anotherWeather] = await Promise.all([
-      getWeatherAtCity(config.TLV_DETAILS.city),
-      getWeatherAtCity(type === FlightsTypes.ARRIVALS ?
-          apiFlight?.flight?.airport.origin.position.region.city :
-          apiFlight?.flight?.airport.destination.position.region.city),
-    ]);
+    const anotherCity = {
+      airport: apiFlight?.flight?.airport[isArrival ? 'origin' : 'destination'].code.iata,
+      city: apiFlight?.flight?.airport[isArrival ? 'origin' : 'destination'].position.region.city,
+      country: apiFlight?.flight?.airport[isArrival ? 'origin' : 'destination'].position.country.name,
+    };
+
+    const anotherWeather = await getWeatherAtCity(anotherCity.city);
     flights.push({
       id: apiFlight?.flight?.identification.id,
       callSign: apiFlight?.flight?.identification.callsign,
       airline: apiFlight?.flight?.airline?.name,
-      origin: type === FlightsTypes.DEPARTURES ? {
-        ...config.TLV_DETAILS,
-        weather: tlvWeather,
-      } : {
-        airport: apiFlight?.flight?.airport.origin.code.iata,
-        city: apiFlight?.flight?.airport.origin.position.region.city,
-        country: apiFlight?.flight?.airport.origin.position.country.name,
+      origin: isArrival ? {
+        ...anotherCity,
         weather: anotherWeather,
+      } : {
+        ...config.TLV_DETAILS,
+        weather: tlvWeather,
       },
-      destination: type === FlightsTypes.ARRIVALS ? {
+      destination: isArrival ? {
         ...config.TLV_DETAILS,
         weather: tlvWeather,
       } : {
-        airport: apiFlight?.flight?.airport.destination.code.iata,
-        city: apiFlight?.flight?.airport.destination.position.region.city,
-        country: apiFlight?.flight?.airport.destination.position.country.name,
+        ...anotherCity,
         weather: anotherWeather,
       },
       actualTime: {
@@ -47,14 +46,10 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
         departureTime: apiFlight?.flight?.time.scheduled.departure,
         arrivalTime: apiFlight?.flight?.time.scheduled.arrival,
       },
-      distance: getGeoDistance(
-          type === FlightsTypes.DEPARTURES ? config.TLV_LOCATION : {
-            lat: apiFlight?.flight?.airport.origin.position.latitude,
-            lon: apiFlight?.flight?.airport.origin.position.longitude,
-          },
-          type === FlightsTypes.ARRIVALS ? config.TLV_LOCATION : {
-            lat: apiFlight?.flight?.airport.destination.position.latitude,
-            lon: apiFlight?.flight?.airport.destination.position.longitude,
+      distance: getGeoDistance(config.TLV_LOCATION,
+          {
+            lat: apiFlight?.flight?.airport[isArrival ? 'origin' : 'destination'].position.latitude,
+            lon: apiFlight?.flight?.airport[isArrival ? 'origin' : 'destination'].position.longitude,
           },
       ),
     });
@@ -63,29 +58,41 @@ const modelHistoricalFlights = async (apiFlights: any[], type: FlightsTypes): Pr
   return flights;
 };
 
-export const sendHistoricalFlights = async () => {
+const getHistoricalFlights = async () => {
   const timeToCheck = moment().subtract(1, 'd').unix();
   const [arrivalsApi, departuresApi] = await Promise.all([
     getAllFlightsByType(FlightsTypes.ARRIVALS, 1, timeToCheck),
     getAllFlightsByType(FlightsTypes.DEPARTURES, 1, timeToCheck),
   ]);
 
+
   const [arrivals, departures] = await Promise.all([
-    modelHistoricalFlights(arrivalsApi, FlightsTypes.ARRIVALS),
-    modelHistoricalFlights(departuresApi, FlightsTypes.DEPARTURES),
+    modelHistoricalFlights(arrivalsApi, true),
+    modelHistoricalFlights(departuresApi, false),
   ]);
-  const messages: Message[] = [];
 
-  arrivals.forEach((flight) => {
-    messages.push({
-      value: JSON.stringify(flight),
-    });
-  });
-  departures.forEach((flight) => {
-    messages.push({
-      value: JSON.stringify(flight),
-    });
-  });
+  return {
+    arrivals,
+    departures,
+  };
+};
 
-  producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_HISTORICAL);
+
+export const sendHistoricalFlights = () => {
+  getHistoricalFlights().then(({ arrivals, departures }) => {
+    const messages: Message[] = [];
+
+    arrivals.forEach((flight) => {
+      messages.push({
+        value: JSON.stringify(flight),
+      });
+    });
+    departures.forEach((flight) => {
+      messages.push({
+        value: JSON.stringify(flight),
+      });
+    });
+
+    producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_HISTORICAL);
+  });
 };

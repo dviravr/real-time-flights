@@ -3,6 +3,8 @@ import { AirportMetadata, config, FlightsTypes } from 'real-time-flight-lib';
 import { sendLog, ServicesEnum } from './logger.service';
 import moment from 'moment';
 
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export const getFlightFullDetails = (flightId: string) => {
   sendLog(ServicesEnum.FLIGHT_RADAR);
   return axios.get(config.FLIGHT_RADAR_SINGLE_FLIGHT_URL, {

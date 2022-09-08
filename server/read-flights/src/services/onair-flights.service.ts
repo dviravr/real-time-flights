@@ -6,59 +6,60 @@ import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { Message } from 'kafkajs';
 import { getWeatherAtCity } from './weather.service';
 
-const modelOnlineFlights = async (apiFlights: any[]): Promise<Flight[]> => {
+const modelOnairFlights = async (apiFlights: any[], isArrival: boolean): Promise<Flight[]> => {
+  const tlvWeather = await getWeatherAtCity(config.TLV_DETAILS.city);
   const flights: Flight[] = [];
-  const flightsFullDetailsPromise = apiFlights
-      ?.filter((apiFlight) => apiFlight?.flight?.identification?.id && apiFlight?.flight?.status?.live)
-      .map((apiFlight) => getFlightFullDetails(apiFlight.flight.identification.id));
-  const flightsFullDetails = (await Promise.all(flightsFullDetailsPromise)).filter((apiFlights) => apiFlights?.data?.status?.live);
-  for (const apiFlight of flightsFullDetails) {
-    const [originWeather, destinationWeather] = await Promise.all([
-      getWeatherAtCity(apiFlight?.data?.airport.origin.position.region.city),
-      getWeatherAtCity(apiFlight?.data?.airport.destination.position.region.city),
-    ]);
-    flights.push({
-      id: apiFlight?.data?.identification.id,
-      callSign: apiFlight?.data?.identification.callsign,
-      airline: apiFlight?.data?.airline.name,
-      origin: {
-        airport: apiFlight?.data?.airport.origin.code.iata,
-        city: apiFlight?.data?.airport.origin.position.region.city,
-        country: apiFlight?.data?.airport.origin.position.country.name,
-        weather: originWeather,
-      },
-      destination: {
-        airport: apiFlight?.data?.airport.destination.code.iata,
-        city: apiFlight?.data?.airport.destination.position.region.city,
-        country: apiFlight?.data?.airport.destination.position.country.name,
-        weather: destinationWeather,
-      },
-      actualTime: {
-        departureTime: apiFlight?.data?.time.real.departure,
-        arrivalTime: apiFlight?.data?.time.real.arrival,
-      },
-      scheduledTime: {
-        departureTime: apiFlight?.data?.time.scheduled.departure,
-        arrivalTime: apiFlight?.data?.time.scheduled.arrival,
-      },
-      distance: getGeoDistance(
-          {
-            lat: apiFlight?.data?.airport.origin.position.latitude,
-            lon: apiFlight?.data?.airport.origin.position.longitude,
-          },
-          {
-            lat: apiFlight?.data?.airport.destination.position.latitude,
-            lon: apiFlight?.data?.airport.destination.position.longitude,
-          },
-      ),
-      trail: apiFlight?.data?.trail.map((location) => ({
-        latitude: location.lat,
-        longitude: location.lng,
-        altitude: location.alt,
-        speed: location.spd,
-        head: location.hd,
-      })),
-    });
+  apiFlights = apiFlights?.filter((apiFlight) => apiFlight?.flight?.identification?.id && apiFlight?.flight?.status?.live);
+
+  for (const apiFlight of apiFlights) {
+    const flight = await getFlightFullDetails(apiFlight.flight.identification.id);
+    if (flight?.data?.status?.live) {
+      const anotherWeather = await getWeatherAtCity(
+          flight.data.airport[isArrival ? 'origin' : 'destination'].position.region.city);
+
+      flights.push({
+        id: flight?.data?.identification.id,
+        callSign: flight?.data?.identification.callsign,
+        airline: flight?.data?.airline?.name,
+        origin: {
+          airport: flight?.data?.airport?.origin?.code.iata,
+          city: flight?.data?.airport?.origin?.position.region.city,
+          country: flight?.data?.airport?.origin.position.country.name,
+          weather: isArrival ? anotherWeather : tlvWeather,
+        },
+        destination: {
+          airport: flight?.data?.airport?.destination?.code.iata,
+          city: flight?.data?.airport?.destination?.position.region.city,
+          country: flight?.data?.airport?.destination?.position.country.name,
+          weather: isArrival ? tlvWeather : anotherWeather,
+        },
+        actualTime: {
+          departureTime: flight?.data?.time?.real.departure,
+          arrivalTime: flight?.data?.time?.real.arrival,
+        },
+        scheduledTime: {
+          departureTime: flight?.data?.time?.scheduled.departure,
+          arrivalTime: flight?.data?.time?.scheduled.arrival,
+        },
+        distance: getGeoDistance(
+            {
+              lat: flight?.data?.airport?.origin?.position.latitude,
+              lon: flight?.data?.airport?.origin?.position.longitude,
+            },
+            {
+              lat: flight?.data?.airport?.destination?.position.latitude,
+              lon: flight?.data?.airport?.destination?.position.longitude,
+            },
+        ),
+        trail: flight?.data?.trail.map((location) => ({
+          latitude: location.lat,
+          longitude: location.lng,
+          altitude: location.alt,
+          speed: location.spd,
+          head: location.hd,
+        })),
+      });
+    }
   }
 
   return flights;
@@ -71,8 +72,8 @@ const getOnAirFlights = async () => {
   ]);
 
   const [arrivals, departures] = await Promise.all([
-    modelOnlineFlights(arrivalsApi),
-    modelOnlineFlights(departuresApi),
+    modelOnairFlights(arrivalsApi, true),
+    modelOnairFlights(departuresApi, false),
   ]);
 
   return {

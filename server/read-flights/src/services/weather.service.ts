@@ -7,7 +7,7 @@ export const getWeatherAtCity = async (city: string): Promise<string> => {
   try {
     const res = await axios.get(config.WEATHER_URL, {
       params: {
-        key: config.WEATHER_API_KEY,
+        key: '8d07f757a89749c0a63194247220809',
         q: city,
       },
     });

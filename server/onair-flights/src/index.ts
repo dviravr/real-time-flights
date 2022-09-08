@@ -5,10 +5,10 @@ import { config, ConsumerService } from 'real-time-flight-lib';
 import { FlightsTypes } from 'real-time-flight-lib/lib/model/flight.model';
 
 export const onAirConsumer = new ConsumerService('on-air-consumer', config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
-export const takeoffConsumer = new ConsumerService('on-air-consumer', config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
+export const takeoffConsumer = new ConsumerService('takeoff-consumer', config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
 
 const app = express();
-const port = 4000;
+const port = 5002;
 
 app.use(json());
 

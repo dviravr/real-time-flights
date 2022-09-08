@@ -2,13 +2,14 @@ import { createClient } from 'redis';
 import { config } from 'real-time-flight-lib';
 
 export const redisClient = createClient({
-  url: config.REDIS_URL,
+  url: 'redis://default:F7hSU7V0rW6jzNLSQghFfIC1IdaTkmgB@redis-16156.c135.eu-central-1-1.ec2.cloud.redislabs.com:16156',
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 
 export const saveFlightsByType = async (flightType: string, flights: string[]) => {
   const lastFlights: string[] = JSON.parse(await redisClient.get(flightType));
+  console.log(flightType, flights);
 
   const justLanded = lastFlights?.filter((flightId) => !flights.includes(flightId));
   console.log(justLanded);

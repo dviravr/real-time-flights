@@ -9,45 +9,46 @@ import { producer } from '../index';
 const modelToBeDeparturesFlights = async (apiFlights: any[], minutesRange: number): Promise<Flight[]> => {
   const timeToCompare = moment().add(minutesRange, 'minutes').unix();
   const threeHoursAgo = moment().subtract(3, 'hours').unix();
-
-  const flightsFullDetailsPromise = [];
-  apiFlights?.filter((apiFlight) => apiFlight?.flight?.identification?.id)
-      .map((apiFlight) => apiFlight.flight.identification.id)
-      .forEach((flightId) => {
-        flightsFullDetailsPromise.push(getFlightFullDetails(flightId));
-      });
-  const flightsFullDetails = (await Promise.all(flightsFullDetailsPromise))
-      .filter((apiFlight) => !apiFlight.data.status?.live &&
-          !apiFlight.data.time.real.departure &&
-          apiFlight.data.time.scheduled.departure < timeToCompare &&
-          apiFlight.data.time.scheduled.departure > threeHoursAgo);
-
+  const tlvWeather = await getWeatherAtCity(config.TLV_DETAILS.city);
   const flights: Flight[] = [];
 
-  for (const apiFlight of flightsFullDetails) {
-    flights.push({
-      id: apiFlight.data.identification.id,
-      callSign: apiFlight.data.identification.callsign,
-      airline: apiFlight.data.airline.name,
-      origin: {
-        ...config.TLV_DETAILS,
-        weather: await getWeatherAtCity(config.TLV_DETAILS.city),
-      },
-      destination: {
-        airport: apiFlight.data.airport.destination.code.iata,
-        city: apiFlight.data.airport.destination.position.region.city,
-        country: apiFlight.data.airport.destination.position.country.name,
-        weather: await getWeatherAtCity(apiFlight.data.airport.destination.position.region.city),
-      },
-      scheduledTime: {
-        departureTime: apiFlight.data.time.scheduled.departure,
-        arrivalTime: apiFlight.data.time.scheduled.arrival,
-      },
-      distance: getGeoDistance(config.TLV_LOCATION, {
-        lat: apiFlight?.data?.airport.destination.position.latitude,
-        lon: apiFlight?.data?.airport.destination.position.longitude,
-      }),
-    });
+  apiFlights = apiFlights?.filter((apiFlight) =>
+    apiFlight?.flight?.identification?.id &&
+      !apiFlight.flight.status?.live &&
+      !apiFlight.flight?.time?.real.departure);
+
+  for (const apiFlight of apiFlights) {
+    const flight = await getFlightFullDetails(apiFlight.flight.identification.id);
+
+    if (!flight.data.status?.live &&
+        !flight.data?.time?.real.departure &&
+        flight.data?.time?.scheduled.departure < timeToCompare &&
+        flight.data?.time?.scheduled.departure > threeHoursAgo) {
+      const anotherWeather = await getWeatherAtCity(flight.data.airport.destination.position.region.city);
+      flights.push({
+        id: flight.data.identification.id,
+        callSign: flight.data.identification.callsign,
+        airline: flight.data.airline.name,
+        origin: {
+          ...config.TLV_DETAILS,
+          weather: tlvWeather,
+        },
+        destination: {
+          airport: flight.data.airport.destination.code.iata,
+          city: flight.data.airport.destination.position.region.city,
+          country: flight.data.airport.destination.position.country.name,
+          weather: anotherWeather,
+        },
+        scheduledTime: {
+          departureTime: flight.data.time.scheduled.departure,
+          arrivalTime: flight.data.time.scheduled.arrival,
+        },
+        distance: getGeoDistance(config.TLV_LOCATION, {
+          lat: flight?.data?.airport.destination.position.latitude,
+          lon: flight?.data?.airport.destination.position.longitude,
+        }),
+      });
+    }
   }
 
   return flights;
