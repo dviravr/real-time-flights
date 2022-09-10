@@ -32,7 +32,7 @@ router.post('/bigml/createDeparturesModel', ((req, res) => {
   createModelByType(FlightsTypes.DEPARTURES, (body: string, status: number) => res.status(status).send(body));
 }));
 // /bigml/predictFlight
-router.post('/bigml/predictFlight', ((req, res) => {
+router.post('/bigml/predictFlights', ((req, res) => {
   const modelDates = req?.body?.startDate && req?.body?.endDate ? { startDate: req.body.startDate, endDate: req.body.endDate } : undefined;
   predictFlights(
       req.body.flights,

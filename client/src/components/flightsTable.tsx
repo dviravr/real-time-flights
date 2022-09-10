@@ -5,41 +5,46 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
+import { Flight } from 'real-time-flight-lib'
 
-export type Flight = {
-    id: string,
-    callSign: string,
-    airline: string,
-    origin: {
-        airport: string,
-        city: string,
-        country: string,
-        weather: string
-    },
-    destination: {
-        airport: string,
-        city: string,
-        country: string,
-        weather: string
-    },
-    actualTime: {
-        departureTime: number,
-        arrivalTime: number
-    },
-    scheduledTime: {
-        departureTime: number,
-        arrivalTime: number
-    },
-    distance: number,
-    trail: [
-        {
-            latitude: number,
-            longitude: number,
-            altitude: number,
-            speed: number,
-            head: number
-        }
-    ]
+// export type Flight = {
+//     id: string,
+//     callSign: string,
+//     airline: string,
+//     origin: {
+//         airport: string,
+//         city: string,
+//         country: string,
+//         weather: string
+//     },
+//     destination: {
+//         airport: string,
+//         city: string,
+//         country: string,
+//         weather: string
+//     },
+//     actualTime: {
+//         departureTime: number,
+//         arrivalTime: number
+//     },
+//     scheduledTime: {
+//         departureTime: number,
+//         arrivalTime: number
+//     },
+//     distance: number,
+//     trail: [
+//         {
+//             latitude: number,
+//             longitude: number,
+//             altitude: number,
+//             speed: number,
+//             head: number
+//         }
+//     ]
+// }
+
+export type prediction = {
+    [id: string]: string
 }
 
 type FlightRow = {
@@ -68,15 +73,18 @@ const columns = [
 
 /* React component where show/hide
   functionality is implemented */
-export const FlightsTable = (props: {flights: Flight[]}) => {
+export const FlightsTable = (props: {flights: Flight[], predictions: prediction}) => {
     let Flights = props.flights;
     let filteredData: FlightRow[] = [];
+
+    // debugger;
+
     Flights.forEach(flight => {
         let row: FlightRow = {
             number: flight.callSign,
             // TODO: Add here some check if the flight is 'On Time'.
-            isOnTime: 'On Time',
-            fromWhere: 'sdsdfsf'
+            isOnTime: props.predictions[flight.id],
+            fromWhere: flight.destination.airport === 'TLV' ? flight.origin.airport : flight.destination.airport,
         };
         filteredData.push(row);
     });

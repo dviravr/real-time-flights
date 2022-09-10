@@ -1,18 +1,46 @@
 import { Map } from '../components/Map'
 import { Clock } from '../components/Clock'
-import { FlightsTable } from "../components/flightsTable";
-import {useEffect, useState} from "react";
+import { FlightsTable, prediction } from "../components/flightsTable";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import flights from '../components/mock.json';
-import { Flight } from '../components/flightsTable';
+import { omit } from 'lodash';
+import { Flight } from 'real-time-flight-lib';
 
 // @ts-ignore
-let arrivingFlightsDefault: Flight[] = Object.values(flights);
+let arrivingFlightsDefault: Flight[] = [];
 // @ts-ignore
-let departuresFlightsDefault: Flight[] = Object.values(flights);
+let departuresFlightsDefault: Flight[] = [];
 // @ts-ignore
 let allFlightsDefault: Flight[] = arrivingFlightsDefault.concat(departuresFlightsDefault);
 
+let arrivingPredictions: prediction;
+
+let departuresPredictions: prediction;
+
+async function predictFlights(flight: Flight[]) {
+    try {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ flights: flight.map(flight => {
+                    return omit(flight, "trail")
+                })
+            })
+        };
+        const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
+
+        // debugger;
+
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+
+
+        return await response.json();
+    } catch (err) {
+        console.error("error: ", err);
+    }
+}
 
 let socket = null;
 
@@ -26,39 +54,18 @@ export const Home = () => {
             // console.log('connected from client');
         });
 
-        socket.on('arriving-flights-update', (data) => {
+        socket.on('arriving-flights-update', async (data) => {
             arrivingFlightsDefault = Object.values(data.flights);
+            arrivingPredictions = await predictFlights(arrivingFlightsDefault);
+            console.log("prediction: ", arrivingPredictions);
             setArrivingFlights(arrivingFlightsDefault);
             // console.log('arriving flights updated');
         });
 
         socket.on('departures-flights-update', async (data) => {
             departuresFlightsDefault = Object.values(data.flights);
+            departuresPredictions = await predictFlights(departuresFlightsDefault);
             setDeparturesFlights(departuresFlightsDefault);
-
-            // Apply learning
-            try {
-                const requestOptions = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ flights: departuresFlightsDefault })
-                };
-                const response = await fetch('http://localhost:5003/bigml/predictFlight', requestOptions);
-
-                if (!response.ok) {
-                    throw new Error(`Error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                console.log('result is: ', JSON.stringify(result, null, 4));
-
-                // setData(result);
-            } catch (err) {
-                // setErr(err.message);
-            } finally {
-                // setIsLoading(false);
-            }
             // console.log('departures flights updated');
         });
 
@@ -67,6 +74,7 @@ export const Home = () => {
             let arrivalsFlights: Flight[] = Object.values(data.arrivals);
 
             allFlightsDefault = departuresFlights.concat(arrivalsFlights);
+            // predictFlights(allFlightsDefault);
             setAllFlights(allFlightsDefault);
             // console.log('all flights updated');
         });
@@ -90,7 +98,7 @@ export const Home = () => {
                         Arriving - {arrivingFlightsDefault.length}
                     </button>
                     {
-                        showIncoming? <FlightsTable flights={arrivingFlightsDefault}/> : null
+                        showIncoming? <FlightsTable flights={arrivingFlightsDefault} predictions={arrivingPredictions}/> : null
                     }
                 </div>
                 <div>
@@ -100,7 +108,7 @@ export const Home = () => {
                         Departures - {departuresFlightsDefault.length}
                     </button>
                     {
-                        showOutgoing? <FlightsTable flights={departuresFlightsDefault}/> : null
+                        showOutgoing? <FlightsTable flights={departuresFlightsDefault} predictions={departuresPredictions}/> : null
                     }
                 </div>
                 <div className="weather">

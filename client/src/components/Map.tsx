@@ -1,10 +1,9 @@
 // @ts-ignore
 import { ReactBingmaps } from 'react-bingmaps';
-// import flights from './mock.json';
-import {Flight} from "./flightsTable";
+import { Flight } from 'real-time-flight-lib';
 
-const airPlainSvg = (deg: number) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-     width="32" height="32" viewBox="0 -30 100 150" xml:space="preserve" style="transform: rotateZ(${deg - 45}deg);">
+const airPlainSvg = (deg?: number) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+     width="32" height="32" viewBox="0 -30 100 150" xml:space="preserve" style="transform: rotateZ(${deg ?? 180 - 45}deg);">
 
 <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
    transform="translate(1 1) scale(1 1)">
@@ -35,7 +34,7 @@ const airPlainSvg = (deg: number) => `<svg xmlns="http://www.w3.org/2000/svg" xm
 </g>
 </svg>`
 
-export const Map = (props: {flights: Flight[]}) => {
+export const Map = (props: { flights: Flight[] }) => {
   // console.log('Map is rendered');
   const bingMapKey = 'AmupYCESFVSeS62fty-byYxUo7TISRBdnIKSWK7e9i02hzdWS6X4JB3iyz6nS74V';
   const TLV_LOCATION = {
@@ -43,17 +42,14 @@ export const Map = (props: {flights: Flight[]}) => {
     lon: 34.886662,
   }
 
-  const pushPins = Object.values(props.flights).map(flight => ({
-    location: [flight.trail[0].latitude, flight.trail[0].longitude],
-    option: { icon: airPlainSvg(flight.trail[0].head) },
-    // addHandler: {
-    //   type: 'click',
-    //   callback: (flight: any) => {
-    //     console.log(flight.id);
-    //   },
-    //   callbackData: flight
-    // }
-  }))
+  const infoboxesWithPushPins = Object.values(props.flights)
+      .filter(flight => flight?.trail?.length)
+      .map(flight => ({
+        location: [flight.trail?.at(0)?.latitude, flight.trail?.at(0)?.longitude],
+        addHandler: 'click',
+        infoboxOption: { description: `from ${flight.origin.city}\n to ${flight.destination.city}` },
+        pushPinOption: { icon: airPlainSvg(flight.trail?.at(0)?.head) },
+      }));
 
   return (
       <ReactBingmaps
@@ -62,7 +58,7 @@ export const Map = (props: {flights: Flight[]}) => {
           center={[TLV_LOCATION.lat, TLV_LOCATION.lon]}
           mapTypeId={"aerial"}
           zoom={5}
-          pushPins={pushPins}
+          infoboxesWithPushPins={infoboxesWithPushPins}
       />
   )
 }
