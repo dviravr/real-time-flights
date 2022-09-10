@@ -5,43 +5,43 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import {omit} from "lodash";
+import { Flight } from 'real-time-flight-lib'
 
-export type Flight = {
-    id: string,
-    callSign: string,
-    airline: string,
-    origin: {
-        airport: string,
-        city: string,
-        country: string,
-        weather: string
-    },
-    destination: {
-        airport: string,
-        city: string,
-        country: string,
-        weather: string
-    },
-    actualTime: {
-        departureTime: number,
-        arrivalTime: number
-    },
-    scheduledTime: {
-        departureTime: number,
-        arrivalTime: number
-    },
-    distance: number,
-    trail: [
-        {
-            latitude: number,
-            longitude: number,
-            altitude: number,
-            speed: number,
-            head: number
-        }
-    ]
-}
+// export type Flight = {
+//     id: string,
+//     callSign: string,
+//     airline: string,
+//     origin: {
+//         airport: string,
+//         city: string,
+//         country: string,
+//         weather: string
+//     },
+//     destination: {
+//         airport: string,
+//         city: string,
+//         country: string,
+//         weather: string
+//     },
+//     actualTime: {
+//         departureTime: number,
+//         arrivalTime: number
+//     },
+//     scheduledTime: {
+//         departureTime: number,
+//         arrivalTime: number
+//     },
+//     distance: number,
+//     trail: [
+//         {
+//             latitude: number,
+//             longitude: number,
+//             altitude: number,
+//             speed: number,
+//             head: number
+//         }
+//     ]
+// }
 
 export type prediction = {
     [id: string]: string

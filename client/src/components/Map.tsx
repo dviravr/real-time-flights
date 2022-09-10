@@ -1,9 +1,9 @@
 // @ts-ignore
 import { ReactBingmaps } from 'react-bingmaps';
-import { Flight } from "./flightsTable";
+import { Flight } from 'real-time-flight-lib';
 
-const airPlainSvg = (deg: number) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-     width="32" height="32" viewBox="0 -30 100 150" xml:space="preserve" style="transform: rotateZ(${deg - 45}deg);">
+const airPlainSvg = (deg?: number) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+     width="32" height="32" viewBox="0 -30 100 150" xml:space="preserve" style="transform: rotateZ(${deg ?? 180 - 45}deg);">
 
 <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
    transform="translate(1 1) scale(1 1)">
@@ -42,12 +42,14 @@ export const Map = (props: { flights: Flight[] }) => {
     lon: 34.886662,
   }
 
-  const infoboxesWithPushPins: any = Object.values(props.flights).map(flight => ({
-    location: [flight.trail[0].latitude, flight.trail[0].longitude],
-    addHandler: 'click',
-    infoboxOption: { description: `from ${flight.origin.city}\n to ${flight.destination.city}` },
-    pushPinOption: { icon: airPlainSvg(flight.trail[0].head) },
-  }));
+  const infoboxesWithPushPins = Object.values(props.flights)
+      .filter(flight => flight?.trail?.length)
+      .map(flight => ({
+        location: [flight.trail?.at(0)?.latitude, flight.trail?.at(0)?.longitude],
+        addHandler: 'click',
+        infoboxOption: { description: `from ${flight.origin.city}\n to ${flight.destination.city}` },
+        pushPinOption: { icon: airPlainSvg(flight.trail?.at(0)?.head) },
+      }));
 
   return (
       <ReactBingmaps

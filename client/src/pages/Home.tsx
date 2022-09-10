@@ -1,9 +1,10 @@
 import { Map } from '../components/Map'
 import { Clock } from '../components/Clock'
-import { Flight, FlightsTable, prediction } from "../components/flightsTable";
+import { FlightsTable, prediction } from "../components/flightsTable";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { omit } from 'lodash';
+import { Flight } from 'real-time-flight-lib';
 
 // @ts-ignore
 let arrivingFlightsDefault: Flight[] = [];
