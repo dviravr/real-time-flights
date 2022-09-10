@@ -5,7 +5,7 @@ import { Prediction } from 'bigml';
 export const predictFlights = async (flights: Flight[], cb: Function, modelDates?: ModelDates) => {
   const flightType = isArrival(flights[0]) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
   const lastModel = await getLastModel(flightType, modelDates);
-  const predictedFlights = [];
+  const predictedFlights = {};
 
   new Promise((resolve, reject) => {
     const prediction = new Prediction(bigmlConnection);
@@ -14,8 +14,8 @@ export const predictFlights = async (flights: Flight[], cb: Function, modelDates
 
       prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
         if (!error && predictionInfo) {
-          predictedFlights.push({ id: flight.id, prediction: predictionInfo.object.output });
-          if (predictedFlights.length === flights.length) {
+          predictedFlights[flight.id] = predictionInfo.object.output;
+          if (Object.keys(predictedFlights).length === flights.length) {
             resolve(predictedFlights);
           }
         } else {
