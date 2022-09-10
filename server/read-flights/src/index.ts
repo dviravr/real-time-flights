@@ -23,13 +23,13 @@ app.use(cors());
 connectMysql();
 
 io.on('connection', async (socket) => {
-  console.log('server connected. id: ', socket.id);
-  console.log('first emit...');
+  // console.log('server connected. id: ', socket.id);
+  // console.log('first emit...');
   sendOnAirFlights(io);
 });
 
 schedule('* * * * *', () => { // cron job every minute
-  console.log('emitting flights...');
+  // console.log('emitting flights...');
   sendOnAirFlights(io);
   sendGoingToDepartureFlights();
 });

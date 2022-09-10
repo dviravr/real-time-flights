@@ -14,7 +14,7 @@ export default function ButtonAppBar() {
             <AppBar position="relative">
                 <Toolbar>
                     <Button color="inherit" href="/">
-                        Future Flights
+                        Flight Radar
                     </Button>
                     <Button color="inherit" href="predict-flights">
                         Future Flights

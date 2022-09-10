@@ -4,7 +4,7 @@ import { FlightsTable } from "../components/flightsTable";
 import {useEffect, useState} from "react";
 import { io } from "socket.io-client";
 import flights from '../components/mock.json';
-import { Flight } from '../components/flightsTable'
+import { Flight } from '../components/flightsTable';
 
 // @ts-ignore
 let arrivingFlightsDefault: Flight[] = Object.values(flights);
@@ -23,7 +23,7 @@ export const Home = () => {
         });
 
         socket.on('connect', () => {
-            console.log('connected from client');
+            // console.log('connected from client');
         });
 
         socket.on('arriving-flights-update', (data) => {
@@ -32,9 +32,33 @@ export const Home = () => {
             // console.log('arriving flights updated');
         });
 
-        socket.on('departures-flights-update', (data) => {
+        socket.on('departures-flights-update', async (data) => {
             departuresFlightsDefault = Object.values(data.flights);
             setDeparturesFlights(departuresFlightsDefault);
+
+            // Apply learning
+            try {
+                const requestOptions = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flights: departuresFlightsDefault })
+                };
+                const response = await fetch('http://localhost:5003/bigml/predictFlight', requestOptions);
+
+                if (!response.ok) {
+                    throw new Error(`Error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                console.log('result is: ', JSON.stringify(result, null, 4));
+
+                // setData(result);
+            } catch (err) {
+                // setErr(err.message);
+            } finally {
+                // setIsLoading(false);
+            }
             // console.log('departures flights updated');
         });
 
@@ -51,7 +75,7 @@ export const Home = () => {
 
     const [departuresFlights, setDeparturesFlights] = useState(departuresFlightsDefault);
     const [arrivingFlights, setArrivingFlights] = useState(arrivingFlightsDefault);
-    const [allFlights, setAllFlights] = useState(arrivingFlightsDefault);
+    const [allFlights, setAllFlights] = useState(allFlightsDefault);
     const [showIncoming, setShowIncoming] = useState(false);
     const [showOutgoing, setShowOutgoing] = useState(false);
     // @ts-ignore
