@@ -34,6 +34,7 @@
     "react-scripts": "5.0.1",
     "react-split": "^2.0.14",
     "real-time-flight-lib": "file:../real-time-flight-lib-1.0.12.tgz",
+    "socket.io-client": "^4.5.2",
     "typescript": "^4.7.4",
     "web-vitals": "^2.1.4"
   },
@@ -60,5 +61,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@tanstack/react-table": "^8.5.13"
   }
 }

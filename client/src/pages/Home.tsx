@@ -3,12 +3,25 @@ import { Clock } from '../components/Clock'
 import { SidePanel } from '../components/SidePanel'
 import { FlightsTable } from "../components/flightsTable";
 import {useEffect, useState} from "react";
+import { io } from "socket.io-client";
+import flights from '../components/mock.json';
+import { Flight } from '../components/flightsTable'
 
-const handleClick = (flights: string) => {
-    console.log("button clicked", flights)
-}
+// @ts-ignore
+let incomingFlightsDefault: Flight[] = Object.values(flights);
+
 
 export const Home = () => {
+    // useEffect(() => {
+    //     const socket = io('http://localhost:5001', {
+    //         transports: ["websocket", "polling"]
+    //     });
+    //     socket.on('message', (msg) => {
+    //         console.log('client: ', msg.message);
+    //     });
+    // });
+
+    const [incomingFlights, setIncomingFlights] = useState(incomingFlightsDefault);
     const [showIncoming, setShowIncoming] = useState(false);
     const [showOutgoing, setShowOutgoing] = useState(false);
     // @ts-ignore
@@ -17,12 +30,14 @@ export const Home = () => {
             <div className="item-flights">
                 <div>
                     <button className="incomingFlights" onClick={() => {
+                        // @ts-ignore
+                        // setIncomingFlights(incomingFlightsDefault);
                         setShowIncoming(!showIncoming);
                     }}>
                         Incoming Flights - 55
                     </button>
                     {
-                        showIncoming? <FlightsTable/> : null
+                        showIncoming? <FlightsTable flights={incomingFlightsDefault}/> : null
                     }
                 </div>
                 <div>
@@ -32,7 +47,7 @@ export const Home = () => {
                         Outgoing Flights - 55
                     </button>
                     {
-                        showOutgoing? <FlightsTable/> : null
+                        showOutgoing? <FlightsTable flights={incomingFlightsDefault}/> : null
                     }
                 </div>
                 <div className="weather">
