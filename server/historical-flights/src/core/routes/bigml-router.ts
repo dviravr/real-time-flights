@@ -11,7 +11,7 @@ router.post('/bigml/createArrivalsModelByDate', ((req, res) => {
   createModelByTypeAndDates(
       FlightsTypes.ARRIVALS,
       moment(req.body.startDate).startOf('day'),
-      moment(req.body.endDate).startOf('day'),
+      moment(req.body.endDate).endOf('day'),
       (body: string, status: number) => res.status(status).send(body));
 }));
 
@@ -20,7 +20,7 @@ router.post('/bigml/createDeparturesModelByDate', ((req, res) => {
   createModelByTypeAndDates(
       FlightsTypes.DEPARTURES,
       moment(req.body.startDate).startOf('day'),
-      moment(req.body.endDate).startOf('day'),
+      moment(req.body.endDate).endOf('day'),
       (body: string, status: number) => res.status(status).send(body));
 }));
 
@@ -33,10 +33,13 @@ router.post('/bigml/createDeparturesModel', ((req, res) => {
 }));
 // /bigml/predictFlight
 router.post('/bigml/predictFlights', ((req, res) => {
-  const modelDates = req?.body?.startDate && req?.body?.endDate ? { startDate: req.body.startDate, endDate: req.body.endDate } : undefined;
+  const modelDates = req?.body?.startDate && req?.body?.endDate ? {
+    startDate: moment(req.body.startDate).startOf('day').toDate(),
+    endDate: moment(req.body.endDate).endOf('day').toDate()
+  } : undefined;
   predictFlights(
       req.body.flights,
-      (body: Array<{ id: string; prediction: string }> | string, status: number) => res.status(status).send(body),
+      (body: {[id: string]: string} | string, status: number) => res.status(status).send(body),
       modelDates,
   );
 }));

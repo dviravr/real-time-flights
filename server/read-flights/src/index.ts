@@ -40,5 +40,4 @@ schedule('0 0 * * *', () => { // cron job every day at 00:00
 
 httpServer.listen(port, async () => {
   console.log(`Express is listening at http://localhost:${port}`);
-  sendHistoricalFlights();
 });
