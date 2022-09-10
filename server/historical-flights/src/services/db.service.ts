@@ -1,4 +1,4 @@
-import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
+import { config, Flight } from 'real-time-flight-lib';
 import mongoose from 'mongoose';
 import { BigmlModelModel } from './bigML.service';
 

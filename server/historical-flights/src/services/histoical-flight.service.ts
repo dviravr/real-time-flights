@@ -1,4 +1,4 @@
-import { Flight, FlightsTypes } from 'real-time-flight-lib';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { flightDbModel } from './db.service';
 import { isNil } from 'lodash';
 import { Moment } from 'moment';
@@ -26,9 +26,9 @@ export const saveHistoricalFlight = async (flight: Flight) => {
 
 export const getAllFlightsByType = async (type: FlightsTypes) => {
   if (type === FlightsTypes.DEPARTURES) {
-    return flightDbModel.find({ 'origin.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
+    return flightDbModel.find({ 'origin.airport': config.TLV_DETAILS.airport }, {}, { sort: { createDate: -1 } });
   } else {
-    return flightDbModel.find({ 'destination.airport': 'TLV' }, {}, { sort: { createDate: -1 } });
+    return flightDbModel.find({ 'destination.airport': config.TLV_DETAILS.airport }, {}, { sort: { createDate: -1 } });
   }
 };
 
@@ -40,9 +40,9 @@ export const getFlightsByDateAndType = async (type: FlightsTypes, startDate: Mom
     },
   });
   if (type === FlightsTypes.DEPARTURES) {
-    filterType.find({ 'origin.airport': 'TLV' });
+    filterType.find({ 'origin.airport': config.TLV_DETAILS.airport });
   } else {
-    filterType.find({ 'destination.airport': 'TLV' });
+    filterType.find({ 'destination.airport': config.TLV_DETAILS.airport });
   }
   console.log(filterType.getFilter());
 

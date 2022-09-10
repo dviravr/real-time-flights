@@ -1,5 +1,5 @@
 import { bigmlDbModel } from './db.service';
-import { Flight, FlightsTypes } from 'real-time-flight-lib';
+import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { isNil } from 'lodash';
 import { HebrewCalendar } from '@hebcal/core';
 import { BigML, Dataset, Model, Source } from 'bigml';
@@ -8,7 +8,7 @@ import { writeFile } from 'fs';
 import { getAllFlightsByType, getFlightsByDateAndType } from './histoical-flight.service';
 import moment, { Moment } from 'moment';
 
-const connection = new BigML('DVIRAVR', '50193977c80c720a87bb5540867fc84c248e26bc');
+const connection = new BigML(config.BIGML_USERNAME, config.BIGML_API_KEY);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -44,7 +44,7 @@ enum DelayRate {
 }
 
 export const isArrival = (flight: Flight): boolean => {
-  return flight?.destination?.airport === 'TLV';
+  return flight?.destination?.airport === config.TLV_DETAILS.airport;
 };
 
 const getDistanceType = (distance: number): DistanceFlightType => {
