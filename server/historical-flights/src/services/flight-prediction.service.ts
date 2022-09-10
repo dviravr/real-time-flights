@@ -1,6 +1,5 @@
 import { Flight, FlightsTypes } from 'real-time-flight-lib';
-import { connection } from 'mongoose';
-import { flightToBigMlModel, getLastModel, isArrival, ModelDates } from './bigML.service';
+import { bigmlConnection, flightToBigMlModel, getLastModel, isArrival, ModelDates } from './bigML.service';
 import { Prediction } from 'bigml';
 
 export const predictFlights = async (flights: Flight[], cb: Function, modelDates?: ModelDates) => {
@@ -9,7 +8,7 @@ export const predictFlights = async (flights: Flight[], cb: Function, modelDates
   const predictedFlights = [];
 
   new Promise((resolve, reject) => {
-    const prediction = new Prediction(connection);
+    const prediction = new Prediction(bigmlConnection);
     flights.forEach((flight) => {
       const bigmlFlight = flightToBigMlModel(flight);
 

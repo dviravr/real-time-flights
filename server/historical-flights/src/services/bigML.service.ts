@@ -8,7 +8,7 @@ import { writeFile } from 'fs';
 import { getAllFlightsByType, getFlightsByDateAndType } from './histoical-flight.service';
 import moment, { Moment } from 'moment';
 
-const connection = new BigML(config.BIGML_USERNAME, config.BIGML_API_KEY);
+export const bigmlConnection = new BigML(config.BIGML_USERNAME, config.BIGML_API_KEY);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -121,13 +121,13 @@ const createModal = (fileName: string, csv, cb: Function, modelDates?: ModelDate
   try {
     writeFile(`${__dirname}\\${fileName}`, csv, (err) => {
       if (err) throw err;
-      const source = new Source(connection);
+      const source = new Source(bigmlConnection);
       source.create(`${__dirname}\\${fileName}`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
-          const dataset = new Dataset(connection);
+          const dataset = new Dataset(bigmlConnection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
             if (!error && datasetInfo) {
-              const model = new Model(connection);
+              const model = new Model(bigmlConnection);
               model.create(datasetInfo.resource, async (error, modelInfo) => {
                 if (!error && modelInfo) {
                   try {
