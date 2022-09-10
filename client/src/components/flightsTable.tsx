@@ -56,8 +56,6 @@ const columns = [
 /* React component where show/hide
   functionality is implemented */
 export const FlightsTable = (props: {flights: Flight[]}) => {
-    // debugger;
-    console.log('flights props: ', props.flights);
     let Flights = props.flights;
     let filteredData: FlightRow[] = [];
     Flights.forEach(flight => {

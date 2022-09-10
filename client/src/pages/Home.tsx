@@ -1,6 +1,5 @@
 import { Map } from '../components/Map'
 import { Clock } from '../components/Clock'
-import { SidePanel } from '../components/SidePanel'
 import { FlightsTable } from "../components/flightsTable";
 import {useEffect, useState} from "react";
 import { io } from "socket.io-client";
@@ -8,20 +7,36 @@ import flights from '../components/mock.json';
 import { Flight } from '../components/flightsTable'
 
 // @ts-ignore
-let incomingFlightsDefault: Flight[] = Object.values(flights);
+let arrivingFlightsDefault: Flight[] = Object.values(flights);
+// @ts-ignore
+let departuresFlightsDefault: Flight[] = Object.values(flights);
 
+let socket = null;
 
 export const Home = () => {
-    // useEffect(() => {
-    //     const socket = io('http://localhost:5001', {
-    //         transports: ["websocket", "polling"]
-    //     });
-    //     socket.on('message', (msg) => {
-    //         console.log('client: ', msg.message);
-    //     });
-    // });
+    useEffect(() => {
+        socket = io('http://localhost:5001', {
+            transports: ["websocket"]
+        });
 
-    const [incomingFlights, setIncomingFlights] = useState(incomingFlightsDefault);
+        socket.on('connect', () => {
+            console.log('connected from client');
+        });
+
+        socket.on('arriving-flights-update', (data) => {
+            arrivingFlightsDefault = Object.values(data.flights);
+            console.log('arriving flights updated');
+        });
+
+        socket.on('departures-flights-update', (data) => {
+            departuresFlightsDefault = Object.values(data.flights);
+            console.log('departures flights updated');
+        });
+    }, []);
+
+
+    const [departuresFlights, setDeparturesFlights] = useState(departuresFlightsDefault);
+    const [arrivingFlights, setArrivingFlights] = useState(arrivingFlightsDefault);
     const [showIncoming, setShowIncoming] = useState(false);
     const [showOutgoing, setShowOutgoing] = useState(false);
     // @ts-ignore
@@ -31,13 +46,13 @@ export const Home = () => {
                 <div>
                     <button className="incomingFlights" onClick={() => {
                         // @ts-ignore
-                        // setIncomingFlights(incomingFlightsDefault);
+                        // setArrivingFlights()
                         setShowIncoming(!showIncoming);
                     }}>
                         Incoming Flights - 55
                     </button>
                     {
-                        showIncoming? <FlightsTable flights={incomingFlightsDefault}/> : null
+                        showIncoming? <FlightsTable flights={arrivingFlightsDefault}/> : null
                     }
                 </div>
                 <div>
@@ -47,7 +62,7 @@ export const Home = () => {
                         Outgoing Flights - 55
                     </button>
                     {
-                        showOutgoing? <FlightsTable flights={incomingFlightsDefault}/> : null
+                        showOutgoing? <FlightsTable flights={departuresFlightsDefault}/> : null
                     }
                 </div>
                 <div className="weather">
