@@ -117,12 +117,12 @@ const createFlightsDataFile = async (flights: Flight[]) => {
   return parser.parse(flightsModel);
 };
 
-const createModal = (fileName: string, csv, cb: Function, modelDates?: ModelDates) => {
+const createModal = (fileName: string, type: FlightsTypes, csv, cb: Function, modelDates?: ModelDates) => {
   try {
-    writeFile(`${__dirname}\\${fileName}`, csv, (err) => {
+    writeFile(`${__dirname}\\${fileName}.csv`, csv, (err) => {
       if (err) throw err;
       const source = new Source(bigmlConnection);
-      source.create(`${__dirname}\\${fileName}`, (error, sourceInfo) => {
+      source.create(`${__dirname}\\${fileName}.csv`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
           const dataset = new Dataset(bigmlConnection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
@@ -131,7 +131,7 @@ const createModal = (fileName: string, csv, cb: Function, modelDates?: ModelDate
               model.create(datasetInfo.resource, async (error, modelInfo) => {
                 if (!error && modelInfo) {
                   try {
-                    await saveModelToDB(FlightsTypes.ARRIVALS, modelInfo.resource, modelDates);
+                    await saveModelToDB(type, modelInfo.resource, modelDates);
                     return cb('model was created', 200);
                   } catch (e) {
                     return cb('failed to save model to db', 400);
@@ -159,7 +159,7 @@ export const createModelByType = async (type: FlightsTypes, cb: Function) => {
   const csv = await createFlightsDataFile(flights);
   const fileName = `${type}.csv`;
 
-  return createModal(fileName, csv, cb);
+  return createModal(fileName, type, csv, cb);
 };
 
 export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Moment, endDate: Moment, cb: Function) => {
@@ -167,7 +167,7 @@ export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: M
   const csv = await createFlightsDataFile(flights);
   const fileName = `${type}${moment(startDate).unix()}-${moment(endDate).unix()}.csv`;
 
-  return createModal(fileName, csv, cb, { startDate: startDate.toDate(), endDate: endDate.toDate() });
+  return createModal(fileName, type, csv, cb, { startDate: startDate.toDate(), endDate: endDate.toDate() });
 };
 
 export const saveModelToDB = async (type: FlightsTypes, model: string, modelDates?: ModelDates) => {
