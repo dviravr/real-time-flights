@@ -41,9 +41,4 @@ router.post('/bigml/predictFlights', ((req, res) => {
   );
 }));
 
-router.get('/bigml', ((req, res) => {
-  console.log('sasdad');
-  res.status(200).send();
-}));
-
 export { router as bigmlRouter };

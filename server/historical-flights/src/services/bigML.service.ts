@@ -119,10 +119,10 @@ const createFlightsDataFile = async (flights: Flight[]) => {
 
 const createModal = (fileName: string, type: FlightsTypes, csv, cb: Function, modelDates?: ModelDates) => {
   try {
-    writeFile(`${__dirname}\\${fileName}.csv`, csv, (err) => {
+    writeFile(`${__dirname}\\${fileName}`, csv, (err) => {
       if (err) throw err;
       const source = new Source(bigmlConnection);
-      source.create(`${__dirname}\\${fileName}.csv`, (error, sourceInfo) => {
+      source.create(`${__dirname}\\${fileName}`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
           const dataset = new Dataset(bigmlConnection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
