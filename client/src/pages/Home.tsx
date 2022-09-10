@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import { io } from "socket.io-client";
 import flights from '../components/mock.json';
 import { Flight } from '../components/flightsTable';
+import { omit } from 'lodash';
 
 // @ts-ignore
 let arrivingFlightsDefault: Flight[] = Object.values(flights);
@@ -12,6 +13,38 @@ let arrivingFlightsDefault: Flight[] = Object.values(flights);
 let departuresFlightsDefault: Flight[] = Object.values(flights);
 // @ts-ignore
 let allFlightsDefault: Flight[] = arrivingFlightsDefault.concat(departuresFlightsDefault);
+
+let arrivingPredictions;
+
+let departuresPredictions;
+
+async function predictFlights(flight: Flight[]) {
+    try {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ flights: flight.map(flight => {
+                    return omit(flight, "trail")
+                })
+            })
+        };
+        const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
+
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        console.log("response: ", response.body)
+        return response.json();
+        // setData(result);
+    } catch (err) {
+        console.error("error: ", err);
+    } finally {
+        // setIsLoading(false);
+    }
+}
 
 
 let socket = null;
@@ -28,37 +61,15 @@ export const Home = () => {
 
         socket.on('arriving-flights-update', (data) => {
             arrivingFlightsDefault = Object.values(data.flights);
+            arrivingPredictions = predictFlights(arrivingFlightsDefault);
             setArrivingFlights(arrivingFlightsDefault);
             // console.log('arriving flights updated');
         });
 
         socket.on('departures-flights-update', async (data) => {
             departuresFlightsDefault = Object.values(data.flights);
+            departuresPredictions = predictFlights(departuresFlightsDefault);
             setDeparturesFlights(departuresFlightsDefault);
-
-            // Apply learning
-            try {
-                const requestOptions = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ flights: departuresFlightsDefault })
-                };
-                const response = await fetch('http://localhost:5003/bigml/predictFlight', requestOptions);
-
-                if (!response.ok) {
-                    throw new Error(`Error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                console.log('result is: ', JSON.stringify(result, null, 4));
-
-                // setData(result);
-            } catch (err) {
-                // setErr(err.message);
-            } finally {
-                // setIsLoading(false);
-            }
             // console.log('departures flights updated');
         });
 
@@ -67,6 +78,7 @@ export const Home = () => {
             let arrivalsFlights: Flight[] = Object.values(data.arrivals);
 
             allFlightsDefault = departuresFlights.concat(arrivalsFlights);
+            // predictFlights(allFlightsDefault);
             setAllFlights(allFlightsDefault);
             // console.log('all flights updated');
         });

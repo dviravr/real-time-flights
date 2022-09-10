@@ -25,9 +25,9 @@ export const connectMysql = () => {
 export const sendLog = (service: ServicesEnum) => {
   const now = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
   const query = `insert into flights_logs.logs(date, service) values('${now}', '${service}');`;
-  mysqlConnection.query(query, (err) => {
-    if (err) {
-      console.log(err);
-    }
-  });
+  // mysqlConnection.query(query, (err) => {
+  //   if (err) {
+  //     console.log(err);
+  //   }
+  // });
 };

@@ -5,6 +5,7 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
+import {omit} from "lodash";
 
 export type Flight = {
     id: string,
@@ -76,7 +77,7 @@ export const FlightsTable = (props: {flights: Flight[]}) => {
             number: flight.callSign,
             // TODO: Add here some check if the flight is 'On Time'.
             isOnTime: 'On Time',
-            fromWhere: 'sdsdfsf'
+            fromWhere: flight.destination.airport === 'TLV' ? flight.origin.airport : flight.destination.airport,
         };
         filteredData.push(row);
     });

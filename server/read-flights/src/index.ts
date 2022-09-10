@@ -29,7 +29,7 @@ io.on('connection', async (socket) => {
 });
 
 schedule('* * * * *', () => { // cron job every minute
-  // console.log('emitting flights...');
+  console.log('emitting flights...');
   sendOnAirFlights(io);
   sendGoingToDepartureFlights();
 });
