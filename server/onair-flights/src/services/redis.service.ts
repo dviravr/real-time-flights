@@ -2,7 +2,7 @@ import { createClient } from 'redis';
 import { config } from 'real-time-flight-lib';
 
 export const redisClient = createClient({
-  url: 'redis://default:F7hSU7V0rW6jzNLSQghFfIC1IdaTkmgB@redis-16156.c135.eu-central-1-1.ec2.cloud.redislabs.com:16156',
+  url: config.REDIS_URL,
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));

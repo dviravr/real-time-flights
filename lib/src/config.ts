@@ -15,16 +15,15 @@ export const config = {
   FLIGHT_RADAR_24_TOKEN: 'VmiBN2LbqmkViGhm_zUV5K8NTMGXkwiHMn9yKFDAPYs',
   REQUEST_INTERVAL: 60000, // 60 seconds
   MONGO_URI: 'mongodb+srv://historicalFlights:gpb4M8XcRO6iMGBm@cluster0.v0awa.mongodb.net/?retryWrites=true&w=majority',
-  REDIS_URL: 'redis://default:Gs01PLNJ4RGcTv1PJdsqNYkMP8PHORVG@redis-14566.c250.eu-central-1-1.ec2.cloud.redislabs.com:14566',
-  BIGML_USERNAME: 'HAREL-EZRA',
-  BIGML_API_KEY: 'd6601ffef42e4b99171778b01b620687617cb643',
+  REDIS_URL: 'redis://default:F7hSU7V0rW6jzNLSQghFfIC1IdaTkmgB@redis-16156.c135.eu-central-1-1.ec2.cloud.redislabs.com:16156',
+  BIGML_USERNAME: 'DVIRAVR',
+  BIGML_API_KEY: '50193977c80c720a87bb5540867fc84c248e26bc',
   WEATHER_URL: 'http://api.weatherapi.com/v1/current.json',
-  WEATHER_API_KEY: '25f1d1b49c54430b8c4171137222408',
+  WEATHER_API_KEY: '8d07f757a89749c0a63194247220809',
   TLV_DETAILS: {
     airport: 'TLV',
     city: 'Tel Aviv',
     country: 'Israel',
-    weather: null,
   },
   TLV_LOCATION: {
     lat: 32.011379,
