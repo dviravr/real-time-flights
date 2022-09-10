@@ -6,7 +6,7 @@
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 0.5fr 2.2fr 0.3fr;
+  grid-template-rows: 0.5fr 5fr 0.3fr;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
 }
@@ -166,6 +166,17 @@
 .styled-table tbody tr.active-row {
   font-weight: bold;
   color: #009879;
+}
+
+.t-head {
+  display: block;
+}
+
+.t-body {
+  display: block;
+  height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #container{width:100%;}
