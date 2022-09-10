@@ -10,6 +10,9 @@ import { Flight } from '../components/flightsTable'
 let arrivingFlightsDefault: Flight[] = Object.values(flights);
 // @ts-ignore
 let departuresFlightsDefault: Flight[] = Object.values(flights);
+// @ts-ignore
+let allFlightsDefault: Flight[] = arrivingFlightsDefault.concat(departuresFlightsDefault);
+
 
 let socket = null;
 
@@ -25,18 +28,30 @@ export const Home = () => {
 
         socket.on('arriving-flights-update', (data) => {
             arrivingFlightsDefault = Object.values(data.flights);
-            console.log('arriving flights updated');
+            setArrivingFlights(arrivingFlightsDefault);
+            // console.log('arriving flights updated');
         });
 
         socket.on('departures-flights-update', (data) => {
             departuresFlightsDefault = Object.values(data.flights);
-            console.log('departures flights updated');
+            setDeparturesFlights(departuresFlightsDefault);
+            // console.log('departures flights updated');
+        });
+
+        socket.on('all-flights-update', (data) => {
+            let departuresFlights: Flight[] = Object.values(data.departures);
+            let arrivalsFlights: Flight[] = Object.values(data.arrivals);
+
+            allFlightsDefault = departuresFlights.concat(arrivalsFlights);
+            setAllFlights(allFlightsDefault);
+            // console.log('all flights updated');
         });
     }, []);
 
 
     const [departuresFlights, setDeparturesFlights] = useState(departuresFlightsDefault);
     const [arrivingFlights, setArrivingFlights] = useState(arrivingFlightsDefault);
+    const [allFlights, setAllFlights] = useState(arrivingFlightsDefault);
     const [showIncoming, setShowIncoming] = useState(false);
     const [showOutgoing, setShowOutgoing] = useState(false);
     // @ts-ignore
@@ -46,10 +61,9 @@ export const Home = () => {
                 <div>
                     <button className="incomingFlights" onClick={() => {
                         // @ts-ignore
-                        // setArrivingFlights()
                         setShowIncoming(!showIncoming);
                     }}>
-                        Incoming Flights - 55
+                        Arriving - {arrivingFlightsDefault.length}
                     </button>
                     {
                         showIncoming? <FlightsTable flights={arrivingFlightsDefault}/> : null
@@ -59,7 +73,7 @@ export const Home = () => {
                     <button className="outgoingFlights" onClick={() => {
                         setShowOutgoing(!showOutgoing);
                     }}>
-                        Outgoing Flights - 55
+                        Departures - {departuresFlightsDefault.length}
                     </button>
                     {
                         showOutgoing? <FlightsTable flights={departuresFlightsDefault}/> : null
@@ -72,7 +86,7 @@ export const Home = () => {
                 </div>
             </div>
             <div className="item map">
-                <Map/>
+                <Map flights={allFlightsDefault}/>
             </div>
             <div className="item clock">
                 <Clock/>

@@ -113,6 +113,10 @@ export const sendOnAirFlights = (io: Server<DefaultEventsMap, DefaultEventsMap, 
     io.emit('departures-flights-update', {
       flights: departures,
     });
+    io.emit('all-flights-update', {
+      departures: departures,
+      arrivals: arrivals,
+    });
     producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
   }).catch((err) => {
     console.log(err);

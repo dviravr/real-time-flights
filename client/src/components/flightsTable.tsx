@@ -31,7 +31,15 @@ export type Flight = {
         arrivalTime: number
     },
     distance: number,
-    trail: []
+    trail: [
+        {
+            latitude: number,
+            longitude: number,
+            altitude: number,
+            speed: number,
+            head: number
+        }
+    ]
 }
 
 type FlightRow = {
