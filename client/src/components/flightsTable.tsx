@@ -44,7 +44,8 @@ export type Flight = {
 
 type FlightRow = {
     number: string,
-    isOnTime: string
+    isOnTime: string,
+    fromWhere: string,
 }
 
 const columnHelper = createColumnHelper<FlightRow>();
@@ -59,6 +60,10 @@ const columns = [
         header: () => 'Status',
         cell: info => info.renderValue(),
     }),
+    columnHelper.accessor('fromWhere', {
+        header: () => 'From/To',
+        cell: info => info.renderValue(),
+    }),
 ]
 
 /* React component where show/hide
@@ -71,6 +76,7 @@ export const FlightsTable = (props: {flights: Flight[]}) => {
             number: flight.callSign,
             // TODO: Add here some check if the flight is 'On Time'.
             isOnTime: 'On Time',
+            fromWhere: 'sdsdfsf'
         };
         filteredData.push(row);
     });

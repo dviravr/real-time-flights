@@ -31,7 +31,7 @@ router.post('/bigml/createArrivalsModel', ((req, res) => {
 router.post('/bigml/createDeparturesModel', ((req, res) => {
   createModelByType(FlightsTypes.DEPARTURES, (body: string, status: number) => res.status(status).send(body));
 }));
-
+// /bigml/predictFlight
 router.post('/bigml/predictFlight', ((req, res) => {
   const modelDates = req?.body?.startDate && req?.body?.endDate ? { startDate: req.body.startDate, endDate: req.body.endDate } : undefined;
   predictFlights(
@@ -39,6 +39,11 @@ router.post('/bigml/predictFlight', ((req, res) => {
       (body: Array<{ id: string; prediction: string }> | string, status: number) => res.status(status).send(body),
       modelDates,
   );
+}));
+
+router.get('/bigml', ((req, res) => {
+  console.log('sasdad');
+  res.status(200).send();
 }));
 
 export { router as bigmlRouter };

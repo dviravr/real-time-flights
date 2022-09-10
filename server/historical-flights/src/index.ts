@@ -4,6 +4,7 @@ import { config, ConsumerService } from 'real-time-flight-lib';
 import { connectToDB } from './services/db.service';
 import { saveHistoricalFlight } from './services/histoical-flight.service';
 import { bigmlRouter } from './core/routes/bigml-router';
+import cors from 'cors';
 
 const app = express();
 const port = 5003;
@@ -11,6 +12,7 @@ const port = 5003;
 export const historicalFlightsConsumer = new ConsumerService('historical-flights', config.CLOUDKARAFKA_TOPIC_HISTORICAL);
 
 app.use(json());
+app.use(cors());
 app.use(bigmlRouter);
 
 app.listen(port, async () => {
