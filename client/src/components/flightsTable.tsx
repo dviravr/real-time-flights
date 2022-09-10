@@ -77,8 +77,8 @@ export const FlightsTable = (props: {flights: Flight[], predictions: prediction}
     let Flights = props.flights;
     let filteredData: FlightRow[] = [];
 
-    debugger;
-    
+    // debugger;
+
     Flights.forEach(flight => {
         let row: FlightRow = {
             number: flight.callSign,

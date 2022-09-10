@@ -8,9 +8,9 @@ import { Flight } from '../components/flightsTable';
 import { omit } from 'lodash';
 
 // @ts-ignore
-let arrivingFlightsDefault: Flight[] = Object.values(flights);
+let arrivingFlightsDefault: Flight[] = [];
 // @ts-ignore
-let departuresFlightsDefault: Flight[] = Object.values(flights);
+let departuresFlightsDefault: Flight[] = [];
 // @ts-ignore
 let allFlightsDefault: Flight[] = arrivingFlightsDefault.concat(departuresFlightsDefault);
 
