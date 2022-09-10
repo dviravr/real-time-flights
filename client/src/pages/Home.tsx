@@ -1,6 +1,6 @@
 import { Map } from '../components/Map'
 import { Clock } from '../components/Clock'
-import { FlightsTable } from "../components/flightsTable";
+import {FlightsTable, prediction} from "../components/flightsTable";
 import {useEffect, useState} from "react";
 import { io } from "socket.io-client";
 import flights from '../components/mock.json';
@@ -14,9 +14,9 @@ let departuresFlightsDefault: Flight[] = Object.values(flights);
 // @ts-ignore
 let allFlightsDefault: Flight[] = arrivingFlightsDefault.concat(departuresFlightsDefault);
 
-let arrivingPredictions;
+let arrivingPredictions: prediction;
 
-let departuresPredictions;
+let departuresPredictions: prediction;
 
 async function predictFlights(flight: Flight[]) {
     try {
@@ -28,7 +28,9 @@ async function predictFlights(flight: Flight[]) {
                 })
             })
         };
-        const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
+        const response = await fetch('/bigml/predictFlights', requestOptions);
+
+        // debugger;
 
         if (!response.ok) {
             throw new Error(`Error! status: ${response.status}`);
@@ -36,16 +38,12 @@ async function predictFlights(flight: Flight[]) {
 
         const result = await response.json();
 
-        console.log("response: ", response.body)
-        return response.json();
+        return result;
         // setData(result);
     } catch (err) {
         console.error("error: ", err);
-    } finally {
-        // setIsLoading(false);
     }
 }
-
 
 let socket = null;
 
@@ -59,16 +57,17 @@ export const Home = () => {
             // console.log('connected from client');
         });
 
-        socket.on('arriving-flights-update', (data) => {
+        socket.on('arriving-flights-update', async (data) => {
             arrivingFlightsDefault = Object.values(data.flights);
-            arrivingPredictions = predictFlights(arrivingFlightsDefault);
+            arrivingPredictions = await predictFlights(arrivingFlightsDefault);
+            console.log("prediction: ", arrivingPredictions);
             setArrivingFlights(arrivingFlightsDefault);
             // console.log('arriving flights updated');
         });
 
         socket.on('departures-flights-update', async (data) => {
             departuresFlightsDefault = Object.values(data.flights);
-            departuresPredictions = predictFlights(departuresFlightsDefault);
+            departuresPredictions = await predictFlights(departuresFlightsDefault);
             setDeparturesFlights(departuresFlightsDefault);
             // console.log('departures flights updated');
         });
@@ -102,7 +101,7 @@ export const Home = () => {
                         Arriving - {arrivingFlightsDefault.length}
                     </button>
                     {
-                        showIncoming? <FlightsTable flights={arrivingFlightsDefault}/> : null
+                        showIncoming? <FlightsTable flights={arrivingFlightsDefault} predictions={arrivingPredictions}/> : null
                     }
                 </div>
                 <div>
@@ -112,7 +111,7 @@ export const Home = () => {
                         Departures - {departuresFlightsDefault.length}
                     </button>
                     {
-                        showOutgoing? <FlightsTable flights={departuresFlightsDefault}/> : null
+                        showOutgoing? <FlightsTable flights={departuresFlightsDefault} predictions={departuresPredictions}/> : null
                     }
                 </div>
                 <div className="weather">

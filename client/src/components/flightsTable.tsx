@@ -43,6 +43,10 @@ export type Flight = {
     ]
 }
 
+export type prediction = {
+    [id: string]: string
+}
+
 type FlightRow = {
     number: string,
     isOnTime: string,
@@ -69,14 +73,17 @@ const columns = [
 
 /* React component where show/hide
   functionality is implemented */
-export const FlightsTable = (props: {flights: Flight[]}) => {
+export const FlightsTable = (props: {flights: Flight[], predictions: prediction}) => {
     let Flights = props.flights;
     let filteredData: FlightRow[] = [];
+
+    debugger;
+    
     Flights.forEach(flight => {
         let row: FlightRow = {
             number: flight.callSign,
             // TODO: Add here some check if the flight is 'On Time'.
-            isOnTime: 'On Time',
+            isOnTime: props.predictions[flight.id],
             fromWhere: flight.destination.airport === 'TLV' ? flight.origin.airport : flight.destination.airport,
         };
         filteredData.push(row);
