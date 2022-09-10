@@ -1,10 +1,8 @@
 import { Map } from '../components/Map'
 import { Clock } from '../components/Clock'
-import {FlightsTable, prediction} from "../components/flightsTable";
-import {useEffect, useState} from "react";
+import { Flight, FlightsTable, prediction } from "../components/flightsTable";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import flights from '../components/mock.json';
-import { Flight } from '../components/flightsTable';
 import { omit } from 'lodash';
 
 // @ts-ignore
@@ -28,7 +26,7 @@ async function predictFlights(flight: Flight[]) {
                 })
             })
         };
-        const response = await fetch('/bigml/predictFlights', requestOptions);
+        const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
 
         // debugger;
 
@@ -36,10 +34,8 @@ async function predictFlights(flight: Flight[]) {
             throw new Error(`Error! status: ${response.status}`);
         }
 
-        const result = await response.json();
 
-        return result;
-        // setData(result);
+        return await response.json();
     } catch (err) {
         console.error("error: ", err);
     }

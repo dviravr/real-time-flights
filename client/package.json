@@ -2,7 +2,6 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5003",
   "dependencies": {
     "@carbon/react": "^1.8.0",
     "@emotion/react": "^11.9.3",
@@ -36,7 +35,7 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-split": "^2.0.14",
-    "real-time-flight-lib": "file:../real-time-flight-lib-1.0.12.tgz",
+    "real-time-flight-lib": "file:../real-time-flight-lib-1.0.13.tgz",
     "socket.io-client": "^4.5.2",
     "typescript": "^4.7.4",
     "web-vitals": "^2.1.4"
