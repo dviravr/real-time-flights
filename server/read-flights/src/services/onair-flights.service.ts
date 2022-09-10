@@ -5,6 +5,8 @@ import { producer } from '../index';
 import { config, Flight, FlightsTypes } from 'real-time-flight-lib';
 import { Message } from 'kafkajs';
 import { getWeatherAtCity } from './weather.service';
+import {Server} from 'socket.io';
+import {DefaultEventsMap} from 'socket.io/dist/typed-events';
 
 const modelOnairFlights = async (apiFlights: any[], isArrival: boolean): Promise<Flight[]> => {
   const tlvWeather = await getWeatherAtCity(config.TLV_DETAILS.city);
@@ -82,7 +84,7 @@ const getOnAirFlights = async () => {
   };
 };
 
-export const sendOnAirFlights = () => {
+export const sendOnAirFlights = (io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
   getOnAirFlights().then(({ arrivals, departures }) => {
     let messages: Message[] = [
       {
@@ -105,6 +107,16 @@ export const sendOnAirFlights = () => {
               value: JSON.stringify(departures[flight]),
             })),
         );
+    io.emit('arriving-flights-update', {
+      flights: arrivals,
+    });
+    io.emit('departures-flights-update', {
+      flights: departures,
+    });
+    io.emit('all-flights-update', {
+      departures: departures,
+      arrivals: arrivals,
+    });
     producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
   }).catch((err) => {
     console.log(err);
