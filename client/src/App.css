@@ -16,7 +16,7 @@
   margin-left: 450px;
   margin-right: 450px;
   grid-template-rows: 1fr;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
 .incomingFlights {

@@ -1,4 +1,3 @@
-import { Clock } from '../components/Clock'
 import { DateRangePickerComp } from "../components/DateRangePicker";
 import Button from "@mui/material/Button";
 
@@ -14,11 +13,10 @@ export const FlightsPrediction = () => {
                 <DateRangePickerComp/>
             </div>
             <Button size={"large"} onClick={() => {
-                console.log("click");
+                console.log("clicked");
             }}>
                 Apply learning
             </Button>
-            {/*<Clock/>*/}
         </div>
     )
 }

@@ -115,7 +115,7 @@ export const Home = () => {
                 </div>
                 <div>
                     <button className="takeoffFlights" onClick={() => {
-                        setShowOutgoing(!showTakeoff);
+                        setShowTakeoff(!showTakeoff);
                     }}>
                         Takeoff - {takeoffFlightsDefault.length}
                     </button>
