@@ -4,8 +4,8 @@ import { redisClient, saveFlight, saveFlightsByType } from './services/redis.ser
 import { config, ConsumerService } from 'real-time-flight-lib';
 import { FlightsTypes } from 'real-time-flight-lib/lib/model/flight.model';
 
-export const onAirConsumer = new ConsumerService('on-air-consumer', config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
-export const takeoffConsumer = new ConsumerService('takeoff-consumer', config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
+export const onAirConsumer = new ConsumerService('on-air-consumer-1', config.CLOUDKARAFKA_TOPIC_ON_AIR_FLIGHTS);
+export const takeoffConsumer = new ConsumerService('takeoff-consumer-1', config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
 
 const app = express();
 const port = 5002;

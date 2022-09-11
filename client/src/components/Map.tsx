@@ -51,6 +51,14 @@ export const Map = (props: { flights: Flight[] }) => {
         pushPinOption: { icon: airPlainSvg(flight.trail?.at(0)?.head) },
       }));
 
+  // @ts-ignore
+  infoboxesWithPushPins.push({
+    location: [TLV_LOCATION.lat, TLV_LOCATION.lon],
+    addHandler: 'click',
+    infoboxOption: { description: `נתב"ג` },
+    pushPinOption: { icon: '' }
+  })
+
   return (
       <ReactBingmaps
           id="map"

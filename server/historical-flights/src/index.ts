@@ -9,7 +9,7 @@ import cors from 'cors';
 const app = express();
 const port = 5003;
 
-export const historicalFlightsConsumer = new ConsumerService('historical-flights', config.CLOUDKARAFKA_TOPIC_HISTORICAL);
+export const historicalFlightsConsumer = new ConsumerService('historical-flights-1', config.CLOUDKARAFKA_TOPIC_HISTORICAL);
 
 app.use(json());
 app.use(cors());
