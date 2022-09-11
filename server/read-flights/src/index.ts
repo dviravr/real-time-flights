@@ -28,7 +28,7 @@ io.on('connection', async (socket) => {
   // sendOnAirFlights(io);
 });
 
-schedule('* * * * *', () => { // cron job every minute
+schedule('*/2 * * * *', () => { // cron job every minute
   console.log('emitting flights...');
   sendOnAirFlights(io);
   sendGoingToDepartureFlights(io);

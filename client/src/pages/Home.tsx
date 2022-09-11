@@ -22,13 +22,21 @@ let departuresPredictions: prediction;
 let takeoffPredictions: prediction;
 
 async function predictFlights(flight: Flight[], isOnair: boolean) {
+    if (!flight.length) return undefined;
     try {
+        const timeout = 45000;
+
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ flights: flight.map(flight => omit(flight, "trail")), isOnair })
         };
-        const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
+        const response = await fetch('http://localhost:5003/bigml/predictFlights', { ...requestOptions, signal: controller.signal });
+
+        clearTimeout(id);
 
         if (!response.ok) {
             throw new Error(`Error! status: ${response.status}`);
