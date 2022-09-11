@@ -5,6 +5,8 @@ import { getGeoDistance } from '../utils/geo.utils';
 import { getWeatherAtCity } from './weather.service';
 import { Message } from 'kafkajs';
 import { producer } from '../index';
+import { Server } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 const modelToBeDeparturesFlights = async (apiFlights: any[], minutesRange: number): Promise<Flight[]> => {
   const timeToCompare = moment().add(minutesRange, 'minutes').unix();
@@ -59,7 +61,7 @@ const getNext15MinutesDepartures = async () => {
   return modelToBeDeparturesFlights(apiDepartures, 15);
 };
 
-export const sendGoingToDepartureFlights = () => {
+export const sendGoingToDepartureFlights = (io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
   getNext15MinutesDepartures().then((flights) => {
     const messages: Message[] = [];
     flights.forEach((flight) => {
@@ -71,6 +73,9 @@ export const sendGoingToDepartureFlights = () => {
     messages.push({
       key: 'takeoff',
       value: JSON.stringify(flights.map((flight) => flight.id)),
+    });
+    io.emit('takeoff-flights-update', {
+      flights,
     });
     producer.sendMessages(messages, config.CLOUDKARAFKA_TOPIC_TAKE_OFF);
   }).catch((err) => {

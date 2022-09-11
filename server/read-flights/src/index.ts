@@ -25,13 +25,13 @@ connectMysql();
 io.on('connection', async (socket) => {
   // console.log('server connected. id: ', socket.id);
   // console.log('first emit...');
-  sendOnAirFlights(io);
+  // sendOnAirFlights(io);
 });
 
 schedule('* * * * *', () => { // cron job every minute
   console.log('emitting flights...');
   sendOnAirFlights(io);
-  sendGoingToDepartureFlights();
+  sendGoingToDepartureFlights(io);
 });
 
 schedule('0 0 * * *', () => { // cron job every day at 00:00
@@ -39,5 +39,7 @@ schedule('0 0 * * *', () => { // cron job every day at 00:00
 });
 
 httpServer.listen(port, async () => {
+  sendOnAirFlights(io);
+  sendGoingToDepartureFlights(io);
   console.log(`Express is listening at http://localhost:${port}`);
 });

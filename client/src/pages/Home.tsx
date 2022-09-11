@@ -7,6 +7,8 @@ import { omit } from 'lodash';
 import { Flight } from 'real-time-flight-lib';
 
 // @ts-ignore
+let takeoffFlightsDefault: Flight[] = [];
+// @ts-ignore
 let arrivingFlightsDefault: Flight[] = [];
 // @ts-ignore
 let departuresFlightsDefault: Flight[] = [];
@@ -17,19 +19,16 @@ let arrivingPredictions: prediction;
 
 let departuresPredictions: prediction;
 
-async function predictFlights(flight: Flight[]) {
+let takeoffPredictions: prediction;
+
+async function predictFlights(flight: Flight[], isOnair: boolean) {
     try {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ flights: flight.map(flight => {
-                    return omit(flight, "trail")
-                })
-            })
+            body: JSON.stringify({ flights: flight.map(flight => omit(flight, "trail")), isOnair })
         };
         const response = await fetch('http://localhost:5003/bigml/predictFlights', requestOptions);
-
-        // debugger;
 
         if (!response.ok) {
             throw new Error(`Error! status: ${response.status}`);
@@ -54,19 +53,22 @@ export const Home = () => {
             // console.log('connected from client');
         });
 
+        socket.on('takeoff-flights-update', async (data) => {
+            takeoffFlightsDefault = data.flights;
+            arrivingPredictions = await predictFlights(takeoffFlightsDefault, false);
+            setTakeoffFlights(takeoffFlightsDefault);
+        });
+
         socket.on('arriving-flights-update', async (data) => {
             arrivingFlightsDefault = Object.values(data.flights);
-            arrivingPredictions = await predictFlights(arrivingFlightsDefault);
-            console.log("prediction: ", arrivingPredictions);
+            arrivingPredictions = await predictFlights(arrivingFlightsDefault, true);
             setArrivingFlights(arrivingFlightsDefault);
-            // console.log('arriving flights updated');
         });
 
         socket.on('departures-flights-update', async (data) => {
             departuresFlightsDefault = Object.values(data.flights);
-            departuresPredictions = await predictFlights(departuresFlightsDefault);
+            departuresPredictions = await predictFlights(departuresFlightsDefault, true);
             setDeparturesFlights(departuresFlightsDefault);
-            // console.log('departures flights updated');
         });
 
         socket.on('all-flights-update', (data) => {
@@ -74,18 +76,18 @@ export const Home = () => {
             let arrivalsFlights: Flight[] = Object.values(data.arrivals);
 
             allFlightsDefault = departuresFlights.concat(arrivalsFlights);
-            // predictFlights(allFlightsDefault);
             setAllFlights(allFlightsDefault);
-            // console.log('all flights updated');
         });
     }, []);
 
 
+    const [takeoffFlights, setTakeoffFlights] = useState(takeoffFlightsDefault);
     const [departuresFlights, setDeparturesFlights] = useState(departuresFlightsDefault);
     const [arrivingFlights, setArrivingFlights] = useState(arrivingFlightsDefault);
     const [allFlights, setAllFlights] = useState(allFlightsDefault);
     const [showIncoming, setShowIncoming] = useState(false);
     const [showOutgoing, setShowOutgoing] = useState(false);
+    const [showTakeoff, setShowTakeoff] = useState(false);
     // @ts-ignore
     return (
         <div className="wrapper">
@@ -109,6 +111,16 @@ export const Home = () => {
                     </button>
                     {
                         showOutgoing? <FlightsTable flights={departuresFlightsDefault} predictions={departuresPredictions}/> : null
+                    }
+                </div>
+                <div>
+                    <button className="takeoffFlights" onClick={() => {
+                        setShowOutgoing(!showTakeoff);
+                    }}>
+                        Takeoff - {takeoffFlightsDefault.length}
+                    </button>
+                    {
+                        showTakeoff? <FlightsTable flights={takeoffFlightsDefault} predictions={takeoffPredictions}/> : null
                     }
                 </div>
                 <div className="weather">

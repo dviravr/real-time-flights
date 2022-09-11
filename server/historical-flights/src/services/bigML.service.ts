@@ -5,7 +5,7 @@ import { HebrewCalendar } from '@hebcal/core';
 import { BigML, Dataset, Model, Source } from 'bigml';
 import { Parser } from 'json2csv';
 import { writeFile } from 'fs';
-import { getAllFlightsByType, getFlightsByDateAndType } from './histoical-flight.service';
+import { getAllFlights, getFlightsByDates } from './histoical-flight.service';
 import moment, { Moment } from 'moment';
 
 export const bigmlConnection = new BigML(config.BIGML_USERNAME, config.BIGML_API_KEY);
@@ -14,7 +14,7 @@ const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export interface BigmlModelModel {
-  type: FlightsTypes;
+  isOnair: boolean;
   createDate: Date;
   model: string;
   modelDates?: ModelDates;
@@ -83,7 +83,7 @@ const getPeriodOfTheYear = (day: Date): PeriodOfTheYear => {
   return PeriodOfTheYear.REGULAR;
 };
 
-export const flightToBigMlModel = (flight: Flight) => {
+export const flightToBigMlModel = (flight: Flight, isOnair: boolean) => {
   const bigmlFlight = {
     airline: flight.airline,
     origin: flight.origin.country,
@@ -91,12 +91,12 @@ export const flightToBigMlModel = (flight: Flight) => {
     originWeather: flight.origin.weather,
     destinationWeather: flight.destination.weather,
     distanceFlightType: getDistanceType(flight.distance),
-    dayInWeek: days[new Date(flight.actualTime.departureTime * 1000).getDay()],
-    monthInYear: months[new Date(flight.actualTime.departureTime * 1000).getMonth()],
-    periodOfYear: getPeriodOfTheYear(new Date(flight.actualTime.departureTime * 1000)),
+    dayInWeek: days[new Date(flight.scheduledTime.departureTime * 1000).getDay()],
+    monthInYear: months[new Date(flight.scheduledTime.departureTime * 1000).getMonth()],
+    periodOfYear: getPeriodOfTheYear(new Date(flight.scheduledTime.departureTime * 1000)),
   };
 
-  return isArrival(flight) ? {
+  return isOnair ? {
     ...bigmlFlight,
     departureDelayRate: getFlightDelayRate(flight.scheduledTime?.departureTime, flight.actualTime?.departureTime),
     arrivalDelayRate: getFlightDelayRate(flight.scheduledTime?.arrivalTime, flight.actualTime?.arrivalTime),
@@ -107,9 +107,9 @@ export const flightToBigMlModel = (flight: Flight) => {
   };
 };
 
-const createFlightsDataFile = async (flights: Flight[]) => {
+const createFlightsDataFile = async (flights: Flight[], isOnair: boolean) => {
   const flightsModel = flights.map((flight) => {
-    return flightToBigMlModel(flight);
+    return flightToBigMlModel(flight, isOnair);
   });
   const fields = Object.keys(flightsModel[0]);
 
@@ -117,12 +117,12 @@ const createFlightsDataFile = async (flights: Flight[]) => {
   return parser.parse(flightsModel);
 };
 
-const createModal = (fileName: string, type: FlightsTypes, csv, cb: Function, modelDates?: ModelDates) => {
+const createModal = (fileName: string, isOnair: boolean, csv, cb: Function, modelDates?: ModelDates) => {
   try {
-    writeFile(`${__dirname}\\${fileName}.csv`, csv, (err) => {
+    writeFile(`${__dirname}\\${fileName}`, csv, (err) => {
       if (err) throw err;
       const source = new Source(bigmlConnection);
-      source.create(`${__dirname}\\${fileName}.csv`, (error, sourceInfo) => {
+      source.create(`${__dirname}\\${fileName}`, (error, sourceInfo) => {
         if (!error && sourceInfo) {
           const dataset = new Dataset(bigmlConnection);
           dataset.create(sourceInfo.resource, (error, datasetInfo) => {
@@ -131,7 +131,7 @@ const createModal = (fileName: string, type: FlightsTypes, csv, cb: Function, mo
               model.create(datasetInfo.resource, async (error, modelInfo) => {
                 if (!error && modelInfo) {
                   try {
-                    await saveModelToDB(type, modelInfo.resource, modelDates);
+                    await saveModelToDB(isOnair, modelInfo.resource, modelDates);
                     return cb('model was created', 200);
                   } catch (e) {
                     return cb('failed to save model to db', 400);
@@ -154,26 +154,26 @@ const createModal = (fileName: string, type: FlightsTypes, csv, cb: Function, mo
   }
 };
 
-export const createModelByType = async (type: FlightsTypes, cb: Function) => {
-  const flights: Flight[] = await getAllFlightsByType(type);
-  const csv = await createFlightsDataFile(flights);
-  const fileName = `${type}.csv`;
+export const createModelByType = async (isOnair: boolean, cb: Function) => {
+  const flights: Flight[] = await getAllFlights();
+  const csv = await createFlightsDataFile(flights, isOnair);
+  const fileName = `${isOnair ? 'onair': 'takeoff'}.csv`;
 
-  return createModal(fileName, type, csv, cb);
+  return createModal(fileName, isOnair, csv, cb);
 };
 
-export const createModelByTypeAndDates = async (type: FlightsTypes, startDate: Moment, endDate: Moment, cb: Function) => {
-  const flights = await getFlightsByDateAndType(type, startDate, endDate);
-  const csv = await createFlightsDataFile(flights);
-  const fileName = `${type}${moment(startDate).unix()}-${moment(endDate).unix()}.csv`;
+export const createModelByTypeAndDates = async (isOnair: boolean, startDate: Moment, endDate: Moment, cb: Function) => {
+  const flights = await getFlightsByDates(startDate, endDate);
+  const csv = await createFlightsDataFile(flights, isOnair);
+  const fileName = `${isOnair ? 'onair' : 'takeoff'}${moment(startDate).unix()}-${moment(endDate).unix()}.csv`;
 
-  return createModal(fileName, type, csv, cb, { startDate: startDate.toDate(), endDate: endDate.toDate() });
+  return createModal(fileName, isOnair, csv, cb, { startDate: startDate.toDate(), endDate: endDate.toDate() });
 };
 
-export const saveModelToDB = async (type: FlightsTypes, model: string, modelDates?: ModelDates) => {
+export const saveModelToDB = async (isOnair: boolean, model: string, modelDates?: ModelDates) => {
   const newBigmlModel = new bigmlDbModel({
     model,
-    type,
+    isOnair,
     modelDates,
     createDate: new Date(),
   });
@@ -181,6 +181,6 @@ export const saveModelToDB = async (type: FlightsTypes, model: string, modelDate
   return await newBigmlModel.save();
 };
 
-export const getLastModel = async (type: FlightsTypes, modelDates?: ModelDates) => {
-  return bigmlDbModel.findOne({ type, modelDates }, {}, { sort: { createDate: -1 } }).exec();
+export const getLastModel = async (isOnair: boolean, modelDates?: ModelDates) => {
+  return bigmlDbModel.findOne({ isOnair, modelDates }, {}, { sort: { createDate: -1 } }).exec();
 };

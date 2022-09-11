@@ -1,16 +1,15 @@
-import { Flight, FlightsTypes } from 'real-time-flight-lib';
-import { bigmlConnection, flightToBigMlModel, getLastModel, isArrival, ModelDates } from './bigML.service';
+import { Flight } from 'real-time-flight-lib';
+import { bigmlConnection, flightToBigMlModel, getLastModel, ModelDates } from './bigML.service';
 import { Prediction } from 'bigml';
 
-export const predictFlights = async (flights: Flight[], cb: Function, modelDates?: ModelDates) => {
-  const flightType = isArrival(flights[0]) ? FlightsTypes.ARRIVALS : FlightsTypes.DEPARTURES;
-  const lastModel = await getLastModel(flightType, modelDates);
+export const predictFlights = async (flights: Flight[], isOnair: boolean, cb: Function, modelDates?: ModelDates) => {
+  const lastModel = await getLastModel(isOnair, modelDates);
   const predictedFlights = {};
 
   new Promise((resolve, reject) => {
     const prediction = new Prediction(bigmlConnection);
     flights.forEach((flight) => {
-      const bigmlFlight = flightToBigMlModel(flight);
+      const bigmlFlight = flightToBigMlModel(flight, isOnair);
 
       prediction.create(lastModel.model, bigmlFlight, (error, predictionInfo) => {
         if (!error && predictionInfo) {

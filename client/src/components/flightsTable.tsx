@@ -82,8 +82,7 @@ export const FlightsTable = (props: {flights: Flight[], predictions: prediction}
     Flights.forEach(flight => {
         let row: FlightRow = {
             number: flight.callSign,
-            // TODO: Add here some check if the flight is 'On Time'.
-            isOnTime: props.predictions[flight.id],
+            isOnTime: props.predictions ? props.predictions[flight.id] : 'אין חיזוי כרגע',
             fromWhere: flight.destination.airport === 'TLV' ? flight.origin.airport : flight.destination.airport,
         };
         filteredData.push(row);

@@ -32,7 +32,7 @@ export const flightSchema = new mongoose.Schema<Flight>({
 });
 
 export const bigmlSchema = new mongoose.Schema<BigmlModelModel>({
-  type: String,
+  isOnair: Boolean,
   createDate: Date,
   model: String,
   modelDates: {
